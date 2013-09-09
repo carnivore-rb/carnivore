@@ -28,7 +28,12 @@ module Carnivore
       "callback<#{self.object_id}>"
     end
 
+    def valid?(message)
+      true
+    end
+
     def call(message)
+      raise TypeError.new('Invalid message for this callback!') unless valid?(message)
       @block ? execute(message, &@block) : execute(message)
     rescue => e
       error "[callback: #{self}, source: #{message[:source]}, message: #{message[:message].object_id}]: #{e.class} - #{e}"
