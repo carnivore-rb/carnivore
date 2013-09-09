@@ -11,5 +11,6 @@ Gem::Specification.new do |s|
   s.require_path = 'lib'
   s.add_dependency 'fog'
   s.add_dependency 'celluloid'
+  s.add_dependency 'mixlib-config'
   s.files = Dir['**/*']
 end
