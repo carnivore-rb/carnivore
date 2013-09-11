@@ -5,9 +5,9 @@ Eat messages, rule the world.
 ## Purpose
 
 Slim library to consume messages. Sources are defined
-and callbacks are registered to defined sources. Worker pools
-then apply the messages to the defined callbacks asynchronously.
-Super simple!
+and callbacks are registered to defined sources. Sources
+feed messages to callback workers asynchronously and
+stuff gets done. Super simple!
 
 ## Usage
 
@@ -21,7 +21,7 @@ Carnivore.configure do
   src.add_callback(:print_message) do |msg|
     puts "Received message: #{message}"
   end
-end
+end.start!
 ```
 
 ### Advanced Usage
@@ -30,7 +30,7 @@ Under the hood, callbacks are built into `Carnivore::Callback`
 instances. This class can be subclassed and provided directly
 instead of a simple block. This has the added bonus of being
 able to define the number of worker instances to be created
-for the callback:
+for the callback (blocks default to 1):
 
 ```ruby
 require 'carnivore'
