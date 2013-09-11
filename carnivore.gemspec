@@ -13,5 +13,6 @@ Gem::Specification.new do |s|
   s.add_dependency 'celluloid'
   s.add_dependency 'reel'
   s.add_dependency 'mixlib-config'
+  s.add_dependency 'bunny'
   s.files = Dir['**/*']
 end
