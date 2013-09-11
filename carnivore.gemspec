@@ -6,7 +6,7 @@ Gem::Specification.new do |s|
   s.summary = 'Message processing helper'
   s.author = 'Chris Roberts'
   s.email = 'chrisroberts.code@gmail.com'
-  s.homepage = 'https://github.com/chrisroberts/carnivore'
+  s.homepage = 'https://github.com/heavywater/carnivore'
   s.description = 'Message processing helper'
   s.require_path = 'lib'
   s.add_dependency 'fog'

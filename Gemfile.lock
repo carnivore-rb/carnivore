@@ -2,6 +2,7 @@ PATH
   remote: .
   specs:
     carnivore (0.1.0)
+      bunny
       celluloid
       fog
       mixlib-config
@@ -11,6 +12,7 @@ GEM
   remote: https://rubygems.org/
   specs:
     builder (3.2.2)
+    bunny (0.8.0)
     celluloid (0.15.1)
       timers (~> 1.1.0)
     celluloid-io (0.15.0)

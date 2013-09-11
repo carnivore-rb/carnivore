@@ -56,4 +56,4 @@ end.start!
 
 ## Info
 
-* Repository: https://github.com/chrisroberts/carnivore
+* Repository: https://github.com/heavywater/carnivore
