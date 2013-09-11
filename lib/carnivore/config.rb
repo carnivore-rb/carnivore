@@ -9,7 +9,7 @@ module Carnivore
     class << self
 
       def configure(args)
-        build(args[:config_file]) if args[:config_file]
+        build(args[:config_path]) if args[:config_path]
         self.merge!(args)
         self
       end
@@ -25,15 +25,15 @@ module Carnivore
             raise "Failed to load configuration file: #{path_or_hash}"
           end
         end
-        path_or_hash.each do |k,v|
-          self[k] = v
+        conf.each do |k,v|
+          self.send(k, v)
         end
         self
       end
 
       def get(*ary)
         ary.flatten.inject(self) do |memo, key|
-          memo[key] || break
+          memo[key.to_s] || memo[key.to_sym] || break
         end
       end
 
