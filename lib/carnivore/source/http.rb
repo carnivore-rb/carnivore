@@ -34,7 +34,6 @@ module Carnivore
               con.respond(:bad_request, 'Failed to process request')
             end
           end
-
         end
       end
 
