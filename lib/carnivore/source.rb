@@ -68,7 +68,7 @@ module Carnivore
       end
       setup(args)
       connect
-      process
+      async.process
     rescue => e
       debug "Failed to initialize: #{self} - #{e.class}: #{e}\n#{e.backtrace.join("\n")}"
       raise
@@ -83,11 +83,11 @@ module Carnivore
     end
 
     def setup(args={})
-      raise NoMethodError.new('Abstract method not valid for runtime')
+      debug "<#{self.class}> No custom setup declared"
     end
 
     def connect(args={})
-      raise NoMethodError.new('Abstract method not valid for runtime')
+      debug "<#{self.class}> No custom connect declared"
     end
 
     def receive(n=1)
