@@ -139,10 +139,14 @@ module Carnivore
 
     def process
       loop do
-        msg = format(receive)
-        @callbacks.each do |name|
-          debug "Dispatching message<#{msg[:message].object_id}> to callback<#{name} (#{callback_name(name)})>"
-          Celluloid::Actor[callback_name(name)].async.call(msg)
+        msgs = Array(receive).flatten.compact.map do |m|
+          format(m)
+        end
+        msgs.each do |msg|
+          @callbacks.each do |name|
+            debug "Dispatching message<#{msg[:message].object_id}> to callback<#{name} (#{callback_name(name)})>"
+            Celluloid::Actor[callback_name(name)].async.call(msg)
+          end
         end
       end
     end
