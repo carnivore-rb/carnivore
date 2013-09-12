@@ -6,18 +6,15 @@ module Carnivore
     end
 
     include Celluloid
-    include Celluloid::Logger
-
-    execute_block_on_receiver :execute
 
     attr_reader :name
 
     def initialize(name, block=nil)
       @name = name
-      @block = block
-      if(@block.nil? && self.class == Callback)
+      if(block.nil? && self.class == Callback)
         raise ArgumentError.new 'Block is required for dynamic callbacks!'
       end
+      define_singleton_method(:execute, &block) if block
       setup
     end
 
@@ -25,7 +22,7 @@ module Carnivore
     end
 
     def inspect
-      "callback<#{self.object_id}>"
+      "callback<#{self.name}:#{self.object_id}>"
     end
 
     def valid?(message)
@@ -33,16 +30,31 @@ module Carnivore
     end
 
     def call(message)
-      raise TypeError.new('Invalid message for this callback!') unless valid?(message)
-      @block ? execute(message, &@block) : execute(message)
+      if(valid?(message))
+        @block ? execute(message, &@block) : execute(message)
+      else
+        debug 'Received message not valid for this callback'
+      end
     rescue => e
       error "[callback: #{self}, source: #{message[:source]}, message: #{message[:message].object_id}]: #{e.class} - #{e}"
       debug "#{e.class}: #{e}\n#{e.backtrace.join("\n")}"
     end
 
-    def execute(message)
-      yield message
+    # Custom logger helpers
+
+    %w(debug info warn error).each do |key|
+      define_method(key) do |string|
+        log(key, string)
+      end
     end
 
+    def log(*args)
+      if(args.empty?)
+        Celluloid::Logger
+      else
+        severity, string = args
+        Celluloid::Logger.send(severity.to_sym, "#{self}: #{string}")
+      end
+    end
   end
 end
