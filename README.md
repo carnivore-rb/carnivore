@@ -54,6 +54,61 @@ Carnivore.configure do
 end.start!
 ```
 
+### Block execution
+
+It is important to note that when providing blocks, they will
+lose all reference to the scope in which they are defined. This
+is due to how `Callback` is implemented and is by design. Simply
+ensure that blocks are fully autonomous and everything will be
+great.
+
+#### Example (bad):
+
+```ruby
+Carnivore.configure do
+  my_inst = AwesomeSauce.new
+  src = Source.build(:type => :test, :args => {})
+  src.add_callback(:print_message) do |msg|
+    my_inst.be_awesome!
+    puts "Received message: #{message}"
+  end
+end.start!
+```
+
+#### Example (good):
+
+```ruby
+Carnivore.configure do
+  src = Source.build(:type => :test, :args => {})
+  src.add_callback(:print_message) do |msg|
+    my_inst = AwesomeSauce.new
+    my_inst.be_awesome!
+    puts "Received message: #{message}"
+  end
+end.start!
+```
+
+So, does that mean a new `AwesomeSauce` instance will be
+created on every message processed? Yes, yes it does. However,
+the block at runtime is no longer really a block, so lets
+keep that instance around so it can be reused:
+
+#### Example (more gooder):
+
+```ruby
+Carnivore.configure do
+  src = Source.build(:type => :test, :args => {})
+  src.add_callback(:print_message) do |msg|
+    unless(@my_inst)
+      @my_inst = AwesomeSauce.new
+    end
+    @my_inst.be_awesome!
+    puts "Received message: #{message}"
+  end
+end.start!
+```
+
 ## Info
 
 * Repository: https://github.com/heavywater/carnivore
+* IRC: Freenode @ #heavywater
