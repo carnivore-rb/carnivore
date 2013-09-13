@@ -1,3 +1,6 @@
+# v0.1.2
+* Allow ARN based queue endpoints for SQS
+
 # v0.1.1
 * Update block implementation within callback
 * Allow multiple queues on single SQS source
