@@ -13,6 +13,9 @@ module Carnivore
         @fog = nil
         @connection_args = args[:fog]
         @queues = Array(args[:queues]).compact.flatten
+        @queues.map! do |q|
+          q.include?('.com') ? q : "/#{q.split(':')[-2,2].join('/')}"
+        end
         @pause_time = args[:pause] || 5
         @receive_timeout = after(args[:receive_timeout] || 30){ terminate }
         debug "Creating SQS source instance <#{name}>"
