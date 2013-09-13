@@ -31,7 +31,7 @@ module Carnivore
 
     def call(message)
       if(valid?(message))
-        @block ? execute(message, &@block) : execute(message)
+        execute(message)
       else
         debug 'Received message not valid for this callback'
       end
