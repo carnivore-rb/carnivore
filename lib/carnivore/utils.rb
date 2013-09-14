@@ -9,7 +9,7 @@ module Carnivore
                 k.gsub(/(?<![A-Z])([A-Z])/, '_\1').sub(/^_/, '').downcase.to_sym,
                 v.is_a?(Hash) ? symbolize_hash(v) : v
               ]
-            end.flatten
+            end.flatten(1)
         )]
       end
     end
