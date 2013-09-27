@@ -12,13 +12,25 @@ module Carnivore
       def setup(args={})
         @fog = nil
         @connection_args = args[:fog]
-        @queues = Array(args[:queues]).compact.flatten
-        @queues.map! do |q|
-          format_queue(q)
+        case args[:queues]
+        when Hash
+          @queues = args[:queues]
+        else
+          @queues = Array(args[:queues]).flatten.compact
+          @queues = Hash[*(
+              @queues.size.times.map(&:to_i).zip(@queues).flatten
+          )]
+        end
+        @queues.values.map do |q|
+          q.replace(format_queue(q))
+        end
+        if(args[:processable_queues])
+          @processable_queues = Array(args[:processable_queues]).flatten.compact
         end
         @pause_time = args[:pause] || 5
         @receive_timeout = after(args[:receive_timeout] || 30){ terminate }
         debug "Creating SQS source instance <#{name}>"
+        debug "Handled queues: #{@queues.inspect}"
       end
 
       def format_queue(q)
@@ -35,7 +47,7 @@ module Carnivore
         while(msgs.empty?)
           msgs = []
           @receive_timeout.reset
-          msgs = @queues.map do |q|
+          msgs = queues.map do |q|
             m = @fog.receive_message(q, 'MaxNumberOfMessages' => n).body['Message']
             m.map! do |msg|
               msg.merge('SourceQueue' => q)
@@ -49,6 +61,8 @@ module Carnivore
               debug "Source<#{name}> last message repeated #{count} times"
             end
             sleep(pause_time)
+          else
+            debug "Received: #{msgs.inspect}"
           end
           count += 1
         end
@@ -59,8 +73,8 @@ module Carnivore
         case dest
         when Numeric
           queue = @queues[dest]
-        when String
-          queue = @queues.detect{|q| q.include?(dest)}
+        when String, Symbol
+          queue = @queues[dest.to_s] || @queues.detect{|q| q.include?(dest.to_s)}
         else
           queue = @queues.first
         end
@@ -68,10 +82,21 @@ module Carnivore
       end
 
       def confirm(message)
+        debug "Source<#{name}> Confirming message<#{message.object_id}>"
         @fog.delete_message(message['SourceQueue'], message['ReceiptHandle'])
       end
 
       private
+
+      def queues
+        if(@processable_queues)
+          @queues.map do |k,v|
+            v if @processable_queues.include?(k)
+          end.compact
+        else
+          @queues.values
+        end
+      end
 
       def fog
         unless(@fog)
