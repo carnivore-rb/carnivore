@@ -1,3 +1,5 @@
+require 'carnivore/utils'
+
 module Carnivore
   class Callback
 
@@ -6,6 +8,7 @@ module Carnivore
     end
 
     include Celluloid
+    include Utils::Logging
 
     attr_reader :name
 
@@ -40,21 +43,5 @@ module Carnivore
       debug "#{e.class}: #{e}\n#{e.backtrace.join("\n")}"
     end
 
-    # Custom logger helpers
-
-    %w(debug info warn error).each do |key|
-      define_method(key) do |string|
-        log(key, string)
-      end
-    end
-
-    def log(*args)
-      if(args.empty?)
-        Celluloid::Logger
-      else
-        severity, string = args
-        Celluloid::Logger.send(severity.to_sym, "#{self}: #{string}")
-      end
-    end
   end
 end
