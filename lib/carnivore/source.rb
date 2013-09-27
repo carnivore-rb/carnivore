@@ -1,4 +1,6 @@
+require 'carnivore/utils'
 require 'carnivore/callback'
+require 'carnivore/message'
 
 module Carnivore
   class Source < Celluloid::SupervisionGroup
@@ -48,16 +50,18 @@ module Carnivore
     end
 
     include Celluloid
-    include Celluloid::Logger
+    include Utils::Logging
 
     attr_reader :name
     attr_reader :callbacks
     attr_reader :auto_confirm
+    attr_reader :auto_process
     attr_reader :callback_supervisor
 
     def initialize(args={})
       @callbacks = []
       @callback_names = {}
+      @auto_process = true
       @callback_supervisor = Celluloid::SupervisionGroup.run!
       @name = args[:name] || Celluloid.uuid
       @auto_confirm = !!args[:auto_confirm]
@@ -68,7 +72,7 @@ module Carnivore
       end
       setup(args)
       connect
-      async.process
+      async.process if @auto_process
     rescue => e
       debug "Failed to initialize: #{self} - #{e.class}: #{e}\n#{e.backtrace.join("\n")}"
       raise
@@ -82,12 +86,16 @@ module Carnivore
       "<#{self.class.name}:#{object_id} @name=#{name} @callbacks=#{Hash[*callbacks.map{|k,v| [k,v.object_id]}.flatten]}>"
     end
 
+    def to_s
+      "<#{self.class.name}:#{object_id} @name=#{name}>"
+    end
+
     def setup(args={})
-      debug "<#{self.class}> No custom setup declared"
+      debug 'No custom setup declared'
     end
 
     def connect(args={})
-      debug "<#{self.class}> No custom connect declared"
+      debug 'No custom connect declared'
     end
 
     def receive(n=1)
@@ -106,9 +114,16 @@ module Carnivore
 
     def add_callback(name, block_or_class)
       if(block_or_class.is_a?(Class))
-        debug "Adding callback class (#{block_or_class}) under supervision. Name: #{callback_name(name)}"
         size = block_or_class.workers || 1
-        @callback_supervisor.pool block_or_class, as: callback_name(name), size: size, args: [name]
+        if(size < 1)
+          warn "Callback class (#{block_or_class}) defined no workers. Skipping."
+        elsif(size == 1)
+          debug "Adding callback class (#{block_or_class}) under supervision. Name: #{callback_name(name)}"
+          @callback_supervisor.supervise_as callback_name(name), block_or_class, name
+        else
+          debug "Adding callback class (#{block_or_class}) under supervision pool (#{size} workers). Name: #{callback_name(name)}"
+          @callback_supervisor.pool block_or_class, as: callback_name(name), size: size, args: [name]
+        end
       else
         debug "Adding custom callback class  from block (#{block_or_class}) under supervision. Name: #{callback_name(name)}"
         @callback_supervisor.supervise_as callback_name(name), Callback, name, block_or_class
@@ -134,7 +149,10 @@ module Carnivore
     end
 
     def format(msg)
-      {:message => msg, :source => self}
+      Message.new(
+        :message => msg,
+        :source => self
+      )
     end
 
     def process
