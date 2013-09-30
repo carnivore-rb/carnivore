@@ -117,6 +117,7 @@ module Carnivore
         size = block_or_class.workers || 1
         if(size < 1)
           warn "Callback class (#{block_or_class}) defined no workers. Skipping."
+          return self
         elsif(size == 1)
           debug "Adding callback class (#{block_or_class}) under supervision. Name: #{callback_name(name)}"
           @callback_supervisor.supervise_as callback_name(name), block_or_class, name
