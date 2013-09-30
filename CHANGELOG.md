@@ -1,3 +1,6 @@
+# v0.1.6
+* Do not register callback if no worker is created
+
 # v0.1.4
 * Update `Source#send` to `Source#transmit`
 * Add common util module for logging
