@@ -46,10 +46,9 @@ module Carnivore
         klass = Source.const_get(klass)
         args[:args][:name] ||= Celluloid.uuid
         inst = SourceContainer.new(klass, args[:args])
-        register(inst)
+        register(args[:args][:name], inst)
         inst
       end
-
 
       def provide(type, require_path)
         @source_klass ||= {}
@@ -62,17 +61,28 @@ module Carnivore
         @source_klass[type.to_sym]
       end
 
-      # inst: SourceContainer
+      # name:: Name of source
+      # inst:: SourceContainer
       # Register the container
-      def register(inst)
-        @sources ||= []
-        @sources << inst
+      def register(name, inst)
+        @sources ||= {}
+        @sources[name.to_sym] = inst
         true
+      end
+
+      # name:: Name of registered source
+      # Return source container
+      def source(name)
+        if(@source && @source[name.to_sym])
+          @source[name.to_sym]
+        else
+          raise KeyError.new("Requested named source is not registered: #{name}")
+        end
       end
 
       # Registered containers
       def sources
-        @sources || []
+        @sources ? @sources.values : []
       end
     end
 
@@ -129,14 +139,16 @@ module Carnivore
       raise NoMethodError.new('Abstract method not valid for runtime')
     end
 
-    def transmit(message)
+    def transmit(message, original_message, args={})
       raise NoMethodError.new('Abstract method not valid for runtime')
     end
 
+    def confirm(message)
+      debug 'No custom confirm declared'
+    end
+
     def terminate
-      if(@callback_supervisor)
-        @callback_supervisor.actors.map(&:terminate)
-      end
+      @callback_supervisor.finalize
     end
 
     def add_callback(name, block_or_class)
