@@ -4,6 +4,7 @@ module Carnivore
   class Callback
 
     class << self
+      # Define number of workers to create
       attr_accessor :workers
     end
 
@@ -21,17 +22,24 @@ module Carnivore
       setup
     end
 
+    # Used by custom callback classes for setup
     def setup
     end
 
+    # Provide nice output when printed
     def inspect
       "callback<#{self.name}:#{self.object_id}>"
     end
+    alias_method :to_s, :inspect
 
+    # message:: Carnivore::Message
+    # Return true if message should be handled by this callback
     def valid?(message)
       true
     end
 
+    # message:: Carnivore::Message
+    # Pass message to registered callbacks
     def call(message)
       if(valid?(message))
         execute(message)
