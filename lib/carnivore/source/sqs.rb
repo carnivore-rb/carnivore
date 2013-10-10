@@ -69,24 +69,38 @@ module Carnivore
         msgs.map{|m| pre_process(m) }
       end
 
-      def transmit(message, dest=nil)
-        case dest
-        when Numeric
-          queue = @queues[dest]
-        when String, Symbol
-          queue = @queues[dest.to_s] || @queues.detect{|q| q.include?(dest.to_s)}
-        else
-          queue = @queues.first
-        end
+      def transmit(message, original=nil)
+        queue = determine_queue(original)
         @fog.send_message(queue, message)
       end
 
       def confirm(message)
-        debug "Source<#{name}> Confirming message<#{message.object_id}>"
-        @fog.delete_message(message['SourceQueue'], message['ReceiptHandle'])
+        queue = determine_queue(message)
+        debug "Source<#{name}> Confirming message<#{message}> on Queue<#{queue}>"
+        m = message.is_a?(Message) ? message[:message] : message
+        @fog.delete_message(queue, m['ReceiptHandle'])
       end
 
       private
+
+      def determine_queue(obj)
+        queue = nil
+        if(obj)
+          if(obj.is_a?(Message))
+            queue = obj[:message]['SourceQueue']
+          else
+            case obj
+            when Numeric
+              queue = @queues[dest]
+            when String, Symbol
+              queue = @queues[dest.to_s] || queues.detect{|q| q.end_with?(dest.to_s)}
+            when Hash
+              queue = obj['SourceQueue']
+            end
+          end
+        end
+        queue || queues.first
+      end
 
       def queues
         if(@processable_queues)
