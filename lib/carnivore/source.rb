@@ -3,19 +3,27 @@ require 'carnivore/callback'
 require 'carnivore/message'
 
 module Carnivore
-  class Source < Celluloid::SupervisionGroup
+  class Source
+
+    class << self
+    end
 
     class SourceContainer
 
       attr_reader :klass
       attr_reader :source_hash
 
+      # class_name:: Name of source class
+      # args:: argument hash to pass to source instance
       def initialize(class_name, args={})
         @klass = class_name
         @source_hash = args || {}
         @source_hash[:callbacks] = {}
       end
 
+      # name:: Name of callback
+      # klass:: Class of callback (optional)
+      # Add a callback to a source via Class or block
       def add_callback(name, klass=nil, &block)
         @source_hash[:callbacks][name] = klass || block
       end
@@ -23,13 +31,17 @@ module Carnivore
 
     class << self
 
+      # args:: Hash
+      #  :type -> Source type
+      #  :args -> arguments for `Source` instance
+      # Builds a source container of `:type`
       def build(args={})
         [:args, :type].each do |key|
           unless(args.has_key?(key))
             raise ArgumentError.new "Missing required parameter `:#{key}`"
           end
         end
-        require "carnivore/source/#{args[:type]}"
+        require Source.require_path(args[:type]) || "carnivore/source/#{args[:type]}"
         klass = args[:type].to_s.split('_').map(&:capitalize).join
         klass = Source.const_get(klass)
         args[:args][:name] ||= Celluloid.uuid
@@ -38,12 +50,27 @@ module Carnivore
         inst
       end
 
+
+      def provide(type, require_path)
+        @source_klass ||= {}
+        @source_klass[type.to_sym] = require_path
+        true
+      end
+
+      def require_path(type)
+        @source_klass ||= {}
+        @source_klass[type.to_sym]
+      end
+
+      # inst: SourceContainer
+      # Register the container
       def register(inst)
         @sources ||= []
         @sources << inst
         true
       end
 
+      # Registered containers
       def sources
         @sources || []
       end
