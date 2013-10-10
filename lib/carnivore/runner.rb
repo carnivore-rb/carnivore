@@ -1,4 +1,5 @@
 require 'celluloid'
+require 'carnivore/config'
 require 'carnivore/source'
 require 'carnivore/container'
 
