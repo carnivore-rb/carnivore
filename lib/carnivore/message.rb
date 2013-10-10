@@ -11,6 +11,10 @@ module Carnivore
       @args[k.to_sym] || @args[k.to_s]
     end
 
+    def confirm!
+      self[:source].confirm(self)
+    end
+
     def inspect
       "<Carnivore::Message[#{self.object_id}] @args=#{args}>"
     end
