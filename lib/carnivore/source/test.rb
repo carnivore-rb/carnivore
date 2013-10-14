@@ -10,7 +10,7 @@ module Carnivore
       end
 
       def connect(*args)
-        puts 'Test connect called'
+        info 'Test connect called'
       end
 
       def receive(*args)
@@ -23,7 +23,7 @@ module Carnivore
       end
 
       def transmit(message)
-        puts "Transmit requested: #{message}"
+        info "Transmit requested: #{message}"
       end
 
     end
