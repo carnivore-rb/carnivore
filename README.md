@@ -19,7 +19,7 @@ stuff gets done. Super simple!
 Carnivore.configure do
   src = Source.build(:type => :test, :args => {})
   src.add_callback(:print_message) do |msg|
-    puts "Received message: #{message}"
+    puts "Received message: #{msg}"
   end
 end.start!
 ```
@@ -70,7 +70,7 @@ Carnivore.configure do
   src = Source.build(:type => :test, :args => {})
   src.add_callback(:print_message) do |msg|
     my_inst.be_awesome!
-    puts "Received message: #{message}"
+    puts "Received message: #{msg}"
   end
 end.start!
 ```
@@ -83,7 +83,7 @@ Carnivore.configure do
   src.add_callback(:print_message) do |msg|
     my_inst = AwesomeSauce.new
     my_inst.be_awesome!
-    puts "Received message: #{message}"
+    puts "Received message: #{msg}"
   end
 end.start!
 ```
@@ -103,7 +103,7 @@ Carnivore.configure do
       @my_inst = AwesomeSauce.new
     end
     @my_inst.be_awesome!
-    puts "Received message: #{message}"
+    puts "Received message: #{msg}"
   end
 end.start!
 ```
