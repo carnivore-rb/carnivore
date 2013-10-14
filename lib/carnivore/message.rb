@@ -1,10 +1,15 @@
+require 'carnivore/source'
+
 module Carnivore
   class Message
 
     attr_reader :args
 
     def initialize(args={})
-      @args = args
+      unless(args[:source])
+        raise ArgumentError.new("A valid `Carnivore::Source` must be provided via `:source`")
+      end
+      @args = args.dup
     end
 
     def [](k)
