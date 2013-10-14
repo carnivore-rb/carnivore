@@ -1,9 +1,10 @@
+require 'carnivore/utils'
 require 'celluloid/logger'
 
 module Carnivore
   class Container < Module
 
-    include Celluloid::Logger
+    include Carnivore::Utils::Logging
 
     class << self
       def log
