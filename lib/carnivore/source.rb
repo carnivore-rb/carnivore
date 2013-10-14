@@ -1,12 +1,10 @@
+require 'celluloid'
 require 'carnivore/utils'
 require 'carnivore/callback'
 require 'carnivore/message'
 
 module Carnivore
   class Source
-
-    class << self
-    end
 
     class SourceContainer
 
@@ -73,8 +71,8 @@ module Carnivore
       # name:: Name of registered source
       # Return source container
       def source(name)
-        if(@source && @source[name.to_sym])
-          @source[name.to_sym]
+        if(@sources && @sources[name.to_sym])
+          @sources[name.to_sym]
         else
           raise KeyError.new("Requested named source is not registered: #{name}")
         end
@@ -98,10 +96,10 @@ module Carnivore
     def initialize(args={})
       @callbacks = []
       @callback_names = {}
-      @auto_process = true
+      @auto_process = args.fetch(:auto_process, true)
+      @auto_confirm = !!args[:auto_confirm]
       @callback_supervisor = Celluloid::SupervisionGroup.run!
       @name = args[:name] || Celluloid.uuid
-      @auto_confirm = !!args[:auto_confirm]
       if(args[:callbacks])
         args[:callbacks].each do |name, block|
           add_callback(name, block)
