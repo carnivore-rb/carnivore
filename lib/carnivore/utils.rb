@@ -1,3 +1,5 @@
+require 'celluloid'
+
 module Carnivore
   module Utils
 
@@ -5,8 +7,13 @@ module Carnivore
       def symbolize_hash(hash)
         Hash[*(
             hash.map do |k,v|
+              if(k.is_a?(String))
+                key = k.gsub(/(?<![A-Z])([A-Z])/, '_\1').sub(/^_/, '').downcase.to_sym
+              else
+                key = k
+              end
               [
-                k.gsub(/(?<![A-Z])([A-Z])/, '_\1').sub(/^_/, '').downcase.to_sym,
+                key,
                 v.is_a?(Hash) ? symbolize_hash(v) : v
               ]
             end.flatten(1)
