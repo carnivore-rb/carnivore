@@ -1,3 +1,10 @@
+# v0.1.8
+* Clean up requires
+* Register sources by name for easy lookup
+* Fix hash symbolizer to not symbolize non-strings
+* Add confirmation helper method to message
+* Start including tests
+
 # v0.1.6
 * Do not register callback if no worker is created
 
