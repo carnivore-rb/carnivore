@@ -8,6 +8,13 @@ module Carnivore
 
     class << self
 
+      def auto_symbolize(v=nil)
+        unless(v.nil?)
+          @hash_symbolizer = !!v
+        end
+        @hash_symbolizer.nil? ? false : @hash_symbolizer
+      end
+
       # args:: configuration hash
       # Merge provided args into configuration
       def configure(args)
@@ -44,8 +51,13 @@ module Carnivore
       #    Config.get(:other_app, :port) => nil
       #    Config.get(:my_app, :mail, :server) => nil
       def get(*ary)
-        ary.flatten.inject(self) do |memo, key|
+        value = ary.flatten.inject(self) do |memo, key|
           memo[key.to_s] || memo[key.to_sym] || break
+        end
+        if(value.is_a?(Hash) && auto_symbolize)
+          Carnivore::Utils.symbolize_hash(value)
+        else
+          value
         end
       end
 
