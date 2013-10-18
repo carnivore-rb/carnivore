@@ -21,6 +21,8 @@ module Carnivore
       end
     end
 
+    extend Params
+
     module Logging
 
       %w(debug info warn error).each do |key|
@@ -39,5 +41,8 @@ module Carnivore
       end
 
     end
+
+    extend Logging
+
   end
 end
