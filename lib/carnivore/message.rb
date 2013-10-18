@@ -16,8 +16,8 @@ module Carnivore
       @args[k.to_sym] || @args[k.to_s]
     end
 
-    def confirm!
-      self[:source].confirm(self)
+    def confirm!(*args)
+      self[:source].confirm(*([self] + args))
     end
 
     def inspect
