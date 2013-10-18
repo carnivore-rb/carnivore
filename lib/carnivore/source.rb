@@ -189,7 +189,7 @@ module Carnivore
     def format(msg)
       Message.new(
         :message => msg,
-        :source => self
+        :source => self.name
       )
     end
 

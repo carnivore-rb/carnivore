@@ -7,13 +7,17 @@ module Carnivore
 
     def initialize(args={})
       unless(args[:source])
-        raise ArgumentError.new("A valid `Carnivore::Source` must be provided via `:source`")
+        raise ArgumentError.new("A valid `Carnivore::Source` name must be provided via `:source`")
       end
       @args = args.dup
     end
 
     def [](k)
-      @args[k.to_sym] || @args[k.to_s]
+      if(k.to_sym == :source)
+        Celluloid::Actor[@args[:source]]
+      else
+        @args[k.to_sym] || @args[k.to_s]
+      end
     end
 
     def confirm!(*args)
