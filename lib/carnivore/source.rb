@@ -91,12 +91,14 @@ module Carnivore
     attr_reader :callbacks
     attr_reader :auto_confirm
     attr_reader :auto_process
+    attr_reader :run_process
     attr_reader :callback_supervisor
 
     def initialize(args={})
       @callbacks = []
       @callback_names = {}
       @auto_process = args.fetch(:auto_process, true)
+      @run_process = @auto_process
       @auto_confirm = !!args[:auto_confirm]
       @callback_supervisor = Celluloid::SupervisionGroup.run!
       @name = args[:name] || Celluloid.uuid
@@ -145,10 +147,6 @@ module Carnivore
       debug 'No custom confirm declared'
     end
 
-    def terminate
-      @callback_supervisor.finalize
-    end
-
     def add_callback(name, block_or_class)
       if(block_or_class.is_a?(Class))
         size = block_or_class.workers || 1
@@ -194,7 +192,7 @@ module Carnivore
     end
 
     def process
-      loop do
+      while(run_process)
         msgs = Array(receive).flatten.compact.map do |m|
           format(m)
         end
