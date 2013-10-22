@@ -110,5 +110,5 @@ end.start!
 
 ## Info
 
-* Repository: https://github.com/heavywater/carnivore
-* IRC: Freenode @ #heavywater
+* Repository: https://github.com/carnivore-rb/carnivore
+* IRC: Freenode @ #carnivore
