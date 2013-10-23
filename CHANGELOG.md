@@ -1,3 +1,9 @@
+# v0.1.10
+* Remove builtin sources
+* Allow optional auto-symbolize
+* Let `confirm!` accept extra parameters
+* Add custom supervisor for future expansion
+
 # v0.1.8
 * Clean up requires
 * Register sources by name for easy lookup
