@@ -109,7 +109,7 @@ module Carnivore
       end
       setup(args)
       connect
-      async.process if @auto_process
+      process if @auto_process
     rescue => e
       debug "Failed to initialize: #{self} - #{e.class}: #{e}\n#{e.backtrace.join("\n")}"
       raise
@@ -185,21 +185,25 @@ module Carnivore
     end
 
     def format(msg)
+      # TODO: Fix this detection nonsense. Hash look up failing for
+      # some reason
       Message.new(
         :message => msg,
-        :source => self.name
+        :source => Celluloid::Actor.all.detect{|a| a.name == name}
       )
     end
 
     def process
-      while(run_process)
-        msgs = Array(receive).flatten.compact.map do |m|
-          format(m)
-        end
-        msgs.each do |msg|
-          @callbacks.each do |name|
-            debug "Dispatching message<#{msg[:message].object_id}> to callback<#{name} (#{callback_name(name)})>"
-            Celluloid::Actor[callback_name(name)].async.call(msg)
+      defer do
+        while(run_process)
+          msgs = Array(receive).flatten.compact.map do |m|
+            format(m)
+          end
+          msgs.each do |msg|
+            @callbacks.each do |name|
+              debug "Dispatching message<#{msg[:message].object_id}> to callback<#{name} (#{callback_name(name)})>"
+              Celluloid::Actor[callback_name(name)].async.call(msg)
+            end
           end
         end
       end

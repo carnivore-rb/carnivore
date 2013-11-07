@@ -13,15 +13,11 @@ module Carnivore
     end
 
     def [](k)
-      if(k.to_sym == :source)
-        Celluloid::Actor[@args[:source]]
-      else
-        @args[k.to_sym] || @args[k.to_s]
-      end
+      @args[k.to_sym] || @args[k.to_s]
     end
 
     def confirm!(*args)
-      self[:source].confirm(*([self] + args))
+      self[:source].confirm(*([self] + args).flatten(1).compact)
     end
 
     def inspect
