@@ -9,7 +9,6 @@ Gem::Specification.new do |s|
   s.homepage = 'https://github.com/carnivore-rb/carnivore'
   s.description = 'Message processing helper'
   s.require_path = 'lib'
-  s.add_dependency 'fog'
   s.add_dependency 'celluloid'
   s.add_dependency 'mixlib-config'
   s.files = Dir['**/*']
