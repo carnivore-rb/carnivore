@@ -185,12 +185,15 @@ module Carnivore
     end
 
     def format(msg)
-      # TODO: Fix this detection nonsense. Hash look up failing for
-      # some reason
-      Message.new(
-        :message => msg,
-        :source => Celluloid::Actor.all.detect{|a| a.name == name}
-      )
+      actor = Celluloid::Actor[name]
+      if(actor)
+        Message.new(
+          :message => msg,
+          :source => actor
+        )
+      else
+        abort "Failed to locate self in registry (#{name})"
+      end
     end
 
     def process
