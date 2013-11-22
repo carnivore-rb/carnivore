@@ -19,6 +19,13 @@ module Carnivore
             end.flatten(1)
         )]
       end
+
+      def retreive(hash, *args)
+        args.flatten.inject(hash) do |memo, key|
+          break unless memo.is_a?(hash) || memo.is_a?(hash.class) || memo.is_a?(Hash)
+          memo[key.to_s] || memo[key.to_sym] || break
+        end
+      end
     end
 
     extend Params

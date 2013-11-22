@@ -1,5 +1,6 @@
 require 'json'
 require 'mixlib/config'
+require 'carnivore/utils'
 
 module Carnivore
   class Config
@@ -51,9 +52,7 @@ module Carnivore
       #    Config.get(:other_app, :port) => nil
       #    Config.get(:my_app, :mail, :server) => nil
       def get(*ary)
-        value = ary.flatten.inject(self) do |memo, key|
-          memo[key.to_s] || memo[key.to_sym] || break
-        end
+        value = Carnivore::Utils.retreive(self, *ary)
         if(value.is_a?(Hash) && auto_symbolize)
           Carnivore::Utils.symbolize_hash(value)
         else
