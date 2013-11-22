@@ -1,3 +1,4 @@
+require 'digest/sha2'
 require 'celluloid'
 require 'carnivore/utils'
 require 'carnivore/callback'
@@ -6,10 +7,42 @@ require 'carnivore/message'
 module Carnivore
   class Source
 
+    class MessageRegistry
+      def initialize
+        @store = []
+        @size = 100
+      end
+
+      def valid?(message)
+        checksum = sha(message)
+        found = @store.include?(checksum)
+        unless(found)
+          push(checksum)
+        end
+        !found
+      end
+
+      def push(item)
+        @store.push(item)
+        if(@store.size > @size)
+          @store.shift
+        end
+        self
+      end
+
+      def sha(thing)
+        unless(thing.is_a?(String))
+          thing = MultiJson.dump(thing)
+        end
+        (Digest::SHA512.new << thing).hexdigest
+      end
+    end
+
     class SourceContainer
 
       attr_reader :klass
       attr_reader :source_hash
+      attr_reader :message_registry
 
       # class_name:: Name of source class
       # args:: argument hash to pass to source instance
@@ -101,6 +134,7 @@ module Carnivore
       @run_process = @auto_process
       @auto_confirm = !!args[:auto_confirm]
       @callback_supervisor = Celluloid::SupervisionGroup.run!
+      @message_registry = MessageRegistry.new if args[:prevent_duplicates]
       @name = args[:name] || Celluloid.uuid
       if(args[:callbacks])
         args[:callbacks].each do |name, block|
@@ -147,7 +181,8 @@ module Carnivore
       debug 'No custom confirm declared'
     end
 
-    def add_callback(name, block_or_class)
+    def add_callback(callback_name, block_or_class)
+      name = "#{self.name}:#{callback_name}"
       if(block_or_class.is_a?(Class))
         size = block_or_class.workers || 1
         if(size < 1)
@@ -196,12 +231,27 @@ module Carnivore
       end
     end
 
+    def valid_message?(m)
+      if(message_registry)
+        if(message_registry.valid?(m))
+          true
+        else
+          warn "Message was already received. Discarding: #{m.inspect}"
+          false
+        end
+      else
+        true
+      end
+    end
+
     def process
       defer do
         while(run_process)
           msgs = Array(receive).flatten.compact.map do |m|
-            format(m)
-          end
+            if(valid_message?(m))
+              format(m)
+            end
+          end.compact
           msgs.each do |msg|
             @callbacks.each do |name|
               debug "Dispatching message<#{msg[:message].object_id}> to callback<#{name} (#{callback_name(name)})>"
