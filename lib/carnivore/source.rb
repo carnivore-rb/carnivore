@@ -42,7 +42,6 @@ module Carnivore
 
       attr_reader :klass
       attr_reader :source_hash
-      attr_reader :message_registry
 
       # class_name:: Name of source class
       # args:: argument hash to pass to source instance
@@ -126,12 +125,13 @@ module Carnivore
     attr_reader :auto_process
     attr_reader :run_process
     attr_reader :callback_supervisor
+    attr_reader :message_registry
 
     def initialize(args={})
       @callbacks = []
       @callback_names = {}
       @auto_process = args.fetch(:auto_process, true)
-      @run_process = @auto_process
+      @run_process = true
       @auto_confirm = !!args[:auto_confirm]
       @callback_supervisor = Celluloid::SupervisionGroup.run!
       @message_registry = MessageRegistry.new if args[:prevent_duplicates]
@@ -143,7 +143,7 @@ module Carnivore
       end
       setup(args)
       connect
-      process if @auto_process
+      async.process if @auto_process
     rescue => e
       debug "Failed to initialize: #{self} - #{e.class}: #{e}\n#{e.backtrace.join("\n")}"
       raise
@@ -244,19 +244,17 @@ module Carnivore
       end
     end
 
-    def process
-      defer do
-        while(run_process)
-          msgs = Array(receive).flatten.compact.map do |m|
-            if(valid_message?(m))
-              format(m)
-            end
-          end.compact
-          msgs.each do |msg|
-            @callbacks.each do |name|
-              debug "Dispatching message<#{msg[:message].object_id}> to callback<#{name} (#{callback_name(name)})>"
-              Celluloid::Actor[callback_name(name)].async.call(msg)
-            end
+    def process(*args)
+      while(run_process)
+        msgs = Array(receive).flatten.compact.map do |m|
+          if(valid_message?(m))
+            format(m)
+          end
+        end.compact
+        msgs.each do |msg|
+          @callbacks.each do |name|
+            debug "Dispatching message<#{msg[:message].object_id}> to callback<#{name} (#{callback_name(name)})>"
+            Celluloid::Actor[callback_name(name)].async.call(msg)
           end
         end
       end
