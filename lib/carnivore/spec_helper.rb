@@ -18,3 +18,19 @@ end
 def source_wait
   sleep(0.1)
 end
+
+
+# dummy store that should never be used for anything real
+class MessageStore
+  class << self
+
+    def init
+      @messages = []
+    end
+
+    def messages
+      @messages
+    end
+
+  end
+end
