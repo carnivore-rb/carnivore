@@ -1,4 +1,7 @@
+require 'carnivore'
 require 'celluloid'
+require 'minitest/autorun'
+
 Celluloid.logger.level = 4
 
 if(File.directory?(dir = File.join(Dir.pwd, 'test', 'specs')))
@@ -34,3 +37,24 @@ class MessageStore
 
   end
 end
+
+# dummy source to hold final tranmission and stuff in store
+module Carnivore
+  class Source
+    class Spec < Source
+      def setup(*args)
+        MessageStore.init
+      end
+
+      def receive(*args)
+        wait(:forever)
+      end
+
+      def transmit(*args)
+        MessageStore.messages << args.first
+      end
+    end
+  end
+end
+
+Carnivore::Source.provide(:spec, 'carnivore/spec_helper')
