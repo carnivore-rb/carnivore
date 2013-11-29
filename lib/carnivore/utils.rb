@@ -20,9 +20,12 @@ module Carnivore
         )]
       end
 
-      def retreive(hash, *args)
+      def retrieve(hash, *args)
+        valids = [::Hash, hash.is_a?(Class) ? hash : hash.class]
         args.flatten.inject(hash) do |memo, key|
-          break unless memo.is_a?(hash) || memo.is_a?(hash.class) || memo.is_a?(Hash)
+          break unless valids.detect{ |valid_type|
+            memo.is_a?(valid_type) || memo == valid_type
+          }
           memo[key.to_s] || memo[key.to_sym] || break
         end
       end

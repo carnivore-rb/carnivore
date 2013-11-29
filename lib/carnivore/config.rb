@@ -52,7 +52,7 @@ module Carnivore
       #    Config.get(:other_app, :port) => nil
       #    Config.get(:my_app, :mail, :server) => nil
       def get(*ary)
-        value = Carnivore::Utils.retreive(self, *ary)
+        value = Carnivore::Utils.retrieve(self, *ary)
         if(value.is_a?(Hash) && auto_symbolize)
           Carnivore::Utils.symbolize_hash(value)
         else
