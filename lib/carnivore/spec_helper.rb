@@ -18,8 +18,9 @@ MiniTest::Spec.before do
   Celluloid.boot
 end
 
-def source_wait
-  sleep(ENV.fetch('CARNIVORE_SOURCE_WAIT', 0.2).to_f)
+# Simple waiter method to stall testing
+def source_wait(name='wait')
+  sleep(ENV.fetch("CARNIVORE_SOURCE_#{name.to_s.upcase}", 0.2).to_f)
 end
 
 # dummy store that should never be used for anything real
