@@ -19,9 +19,8 @@ MiniTest::Spec.before do
 end
 
 def source_wait
-  sleep(0.1)
+  sleep(ENV.fetch('CARNIVORE_SOURCE_WAIT', 0.2).to_f)
 end
-
 
 # dummy store that should never be used for anything real
 class MessageStore
