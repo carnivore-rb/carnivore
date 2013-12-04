@@ -143,7 +143,9 @@ module Carnivore
       end
       setup(args)
       connect
-      async.process if @auto_process
+      if(auto_process && !callbacks.empty?)
+        async.process
+      end
     rescue => e
       debug "Failed to initialize: #{self} - #{e.class}: #{e}\n#{e.backtrace.join("\n")}"
       raise
@@ -245,7 +247,7 @@ module Carnivore
     end
 
     def process(*args)
-      while(run_process)
+      while(run_process && !callbacks.empty?)
         msgs = Array(receive).flatten.compact.map do |m|
           if(valid_message?(m))
             format(m)
