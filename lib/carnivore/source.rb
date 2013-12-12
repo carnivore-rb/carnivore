@@ -222,7 +222,7 @@ module Carnivore
     end
 
     def format(msg)
-      actor = Celluloid::Actor[name]
+      actor = Carnivore::Supervisor.supervisor[name]
       if(actor)
         Message.new(
           :message => msg,
