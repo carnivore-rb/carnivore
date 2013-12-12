@@ -2,6 +2,7 @@ require 'celluloid'
 require 'carnivore/config'
 require 'carnivore/source'
 require 'carnivore/container'
+require 'carnivore/errors'
 
 module Carnivore
   class << self
@@ -15,15 +16,27 @@ module Carnivore
       supervisor = nil
       begin
         require 'carnivore/supervisor'
-        supervisor = Carnivore::Supervisor.run!
+        supervisor = Carnivore::Supervisor.build!
         Source.sources.each do |source|
           supervisor.supervise_as(
             source.source_hash[:name],
             source.klass,
-            source.source_hash
+            source.source_hash.dup
           )
         end
-        supervisor.wait(:kill_all_humans)
+        loop do
+          sleep 5 while supervisor.alive?
+          Celluloid::Logger.error 'Carnivore supervisor has died!'
+          raise Carnivore::Error::DeadSupervisor.new
+        end
+      rescue Carnivore::Error::DeadSupervisor
+        warn "Received dead supervisor exception. Attempting to restart."
+        begin
+          supervisor.terminate
+        rescue => e
+          debug "Exception raised during supervisor termination (restart cleanup): #{e}"
+        end
+        retry
       rescue Exception => e
         supervisor.terminate
         # Gracefully shut down
