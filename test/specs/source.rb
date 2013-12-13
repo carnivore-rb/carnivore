@@ -62,7 +62,9 @@ describe 'Carnivore::Source' do
   describe 'Processing with base Source instance' do
     it 'should raise an exception' do
       -> {
-        Carnivore::Source.new(:auto_process => false).process
+        x = Carnivore::Source.new(:auto_process => false)
+        x.add_callback(:fubar, lambda{|m| true })
+        x.process
       }.must_raise NoMethodError
     end
   end
