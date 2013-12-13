@@ -3,6 +3,7 @@ require 'celluloid'
 require 'carnivore/utils'
 require 'carnivore/callback'
 require 'carnivore/message'
+require 'carnivore/supervisor'
 
 module Carnivore
   class Source
@@ -147,7 +148,7 @@ module Carnivore
       @auto_process = args.fetch(:auto_process, true)
       @run_process = true
       @auto_confirm = !!args[:auto_confirm]
-      @callback_supervisor = Celluloid::SupervisionGroup.run!
+      @callback_supervisor = Carnivore::Supervisor.create!.last
       @message_registry = MessageRegistry.new if args[:prevent_duplicates]
       @name = args[:name] || Celluloid.uuid
       if(args[:callbacks])
@@ -224,16 +225,16 @@ module Carnivore
           return self
         elsif(size == 1)
           debug "Adding callback class (#{block_or_class}) under supervision. Name: #{callback_name(name)}"
-          @callback_supervisor.supervise_as callback_name(name), block_or_class, name
+          callback_supervisor.supervise_as callback_name(name), block_or_class, name
         else
           debug "Adding callback class (#{block_or_class}) under supervision pool (#{size} workers). Name: #{callback_name(name)}"
-          @callback_supervisor.pool block_or_class, as: callback_name(name), size: size, args: [name]
+          callback_supervisor.pool block_or_class, as: callback_name(name), size: size, args: [name]
         end
       else
         debug "Adding custom callback class  from block (#{block_or_class}) under supervision. Name: #{callback_name(name)}"
-        @callback_supervisor.supervise_as callback_name(name), Callback, name, block_or_class
+        callback_supervisor.supervise_as callback_name(name), Callback, name, block_or_class
       end
-      @callbacks.push(name).uniq!
+      callbacks.push(name).uniq!
       self
     end
 
@@ -298,7 +299,7 @@ module Carnivore
         msgs.each do |msg|
           @callbacks.each do |name|
             debug "Dispatching message<#{msg[:message].object_id}> to callback<#{name} (#{callback_name(name)})>"
-            Celluloid::Actor[callback_name(name)].async.call(msg)
+            callback_supervisor[callback_name(name)].async.call(msg)
           end
         end
       end

@@ -7,8 +7,14 @@ module Carnivore
 
       # Build a new supervisor
       def build!
-        @registry = Celluloid::Registry.new
-        @supervisor = run!(@registry)
+        @registry, @supervisor = create!
+      end
+
+      # Create a new supervisor
+      # Returns [registry,supervisor]
+      def create!
+        registry = Celluloid::Registry.new
+        [registry, run!(registry)]
       end
 
     end
