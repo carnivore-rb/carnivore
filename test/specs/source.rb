@@ -60,13 +60,18 @@ describe 'Carnivore::Source' do
   end
 
   describe 'Processing with base Source instance' do
-    it 'should raise an exception' do
+    it 'should raise an exception due to non-overridden `receive` method' do
       -> {
         x = Carnivore::Source.new(:auto_process => false)
         x.add_callback(:fubar, lambda{|m| true })
         x.process
       }.must_raise NoMethodError
     end
+
+    it 'should do nothing when process is called and no callbacks are registered' do
+      Carnivore::Source.new(:auto_process => false).process.must_be_nil
+    end
+
   end
 
   describe 'Source test instance' do
