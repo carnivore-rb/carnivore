@@ -1,4 +1,3 @@
-require 'minitest/autorun'
 require 'carnivore/message'
 
 describe 'Carnivore::Message' do

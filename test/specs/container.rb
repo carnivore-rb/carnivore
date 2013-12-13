@@ -1,4 +1,3 @@
-require 'minitest/autorun'
 require 'carnivore/container'
 
 describe 'Carnivore::Container' do
