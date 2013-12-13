@@ -8,6 +8,7 @@ module Carnivore
       # Build a new supervisor
       def build!
         @registry, @supervisor = create!
+        @supervisor
       end
 
       # Create a new supervisor
@@ -15,6 +16,19 @@ module Carnivore
       def create!
         registry = Celluloid::Registry.new
         [registry, run!(registry)]
+      end
+
+      # Destroy the registered supervisor
+      def terminate!
+        if(supervisor)
+          begin
+            supervisor.terminate
+          rescue Celluloid::DeadActorError
+          end
+          @supervisor = nil
+          @registry = nil
+        end
+        true
       end
 
     end
