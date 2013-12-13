@@ -6,12 +6,16 @@ require 'carnivore/errors'
 
 module Carnivore
   class << self
+
+    # block:: Block of configuration
+    # Add configuration to Carnivore
     def configure(&block)
       mod = Container.new
       mod.instance_exec(mod, &block)
       self
     end
 
+    # Start carnivore
     def start!
       supervisor = nil
       begin

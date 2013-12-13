@@ -4,6 +4,9 @@ module Carnivore
   module Utils
 
     module Params
+
+      # hash:: Hash
+      # Symbolize keys in hash
       def symbolize_hash(hash)
         Hash[*(
             hash.map do |k,v|
@@ -20,6 +23,10 @@ module Carnivore
         )]
       end
 
+      # hash:: Hash
+      # args:: Symbols or strings
+      # Follow path in hash provided by args and return value or nil
+      # if path is not valid
       def retrieve(hash, *args)
         valids = [::Hash, hash.is_a?(Class) ? hash : hash.class]
         args.flatten.inject(hash) do |memo, key|
@@ -35,12 +42,14 @@ module Carnivore
 
     module Logging
 
+      # Define base logging types
       %w(debug info warn error).each do |key|
         define_method(key) do |string|
           log(key, string)
         end
       end
 
+      # Log message
       def log(*args)
         if(args.empty?)
           Celluloid::Logger

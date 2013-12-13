@@ -7,12 +7,15 @@ require 'carnivore/message'
 module Carnivore
   class Source
 
+    # Registry used for preventing duplicate message processing
     class MessageRegistry
       def initialize
         @store = []
         @size = 100
       end
 
+      # message:: Carnivore::Message
+      # Returns true if message has not been processed
       def valid?(message)
         checksum = sha(message)
         found = @store.include?(checksum)
@@ -22,6 +25,8 @@ module Carnivore
         !found
       end
 
+      # item:: checksum
+      # Pushes checksum into store
       def push(item)
         @store.push(item)
         if(@store.size > @size)
@@ -30,6 +35,8 @@ module Carnivore
         self
       end
 
+      # thing:: Instance
+      # Return checksum for give instance
       def sha(thing)
         unless(thing.is_a?(String))
           thing = MultiJson.dump(thing)
@@ -38,6 +45,8 @@ module Carnivore
       end
     end
 
+    # Container for holding source configuration. This allows setup to
+    # occur prior to the supervisor actually starting the sources
     class SourceContainer
 
       attr_reader :klass
@@ -80,12 +89,17 @@ module Carnivore
         inst
       end
 
+      # type:: Symbol of type of source
+      # require_path:: Path to feed to `require`
+      # Registers a source
       def provide(type, require_path)
         @source_klass ||= {}
         @source_klass[type.to_sym] = require_path
         true
       end
 
+      # type: Symbol of source type
+      # Returns register path for given type of source
       def require_path(type)
         @source_klass ||= {}
         @source_klass[type.to_sym]
@@ -151,38 +165,56 @@ module Carnivore
       raise
     end
 
+    # Automatically confirm messages after dispatch
     def auto_confirm?
       @auto_confirm
     end
 
+    # Return string for inspection
     def inspect
       "<#{self.class.name}:#{object_id} @name=#{name} @callbacks=#{Hash[*callbacks.map{|k,v| [k,v.object_id]}.flatten]}>"
     end
 
+    # Return string of instance
     def to_s
       "<#{self.class.name}:#{object_id} @name=#{name}>"
     end
 
+    # args:: Argument hash used to initialize instance
+    # Setup called during initialization for child sources to override
     def setup(args={})
       debug 'No custom setup declared'
     end
 
+    # args:: Argument hash
+    # Connection method to be overridden in child sources
     def connect(args={})
       debug 'No custom connect declared'
     end
 
+    # args:: number of messages to read
+    # Returns messages from source
     def receive(n=1)
       raise NoMethodError.new('Abstract method not valid for runtime')
     end
 
-    def transmit(message, original_message, args={})
+    # message:: Payload to transmit
+    # original_message:: Original `Carnivore::Message`
+    # args:: Custom arguments
+    # Transmit message on source
+    def transmit(message, original_message=nil, args={})
       raise NoMethodError.new('Abstract method not valid for runtime')
     end
 
+    # message:: Carnivore::Message
+    # Confirm receipt of the message on source
     def confirm(message)
       debug 'No custom confirm declared'
     end
 
+    # callback_name:: Name of callback
+    # block_or_class:: Carnivore::Callback class or a block
+    # Adds the given callback to the source for message processing
     def add_callback(callback_name, block_or_class)
       name = "#{self.name}:#{callback_name}"
       if(block_or_class.is_a?(Class))
@@ -205,6 +237,8 @@ module Carnivore
       self
     end
 
+    # name:: Name of callback
+    # Remove the named callback from the source
     def remove_callback(name)
       unless(@callbacks.include?(callback_name(name)))
         raise NameError.new("Failed to locate callback named: #{name}")
@@ -214,6 +248,8 @@ module Carnivore
       self
     end
 
+    # name:: Name of callback
+    # Returns namespaced name (prefixed with source name and instance id)
     def callback_name(name)
       unless(@callback_names[name])
         @callback_names[name] = [@name, self.object_id, name].join(':').to_sym
@@ -221,6 +257,8 @@ module Carnivore
       @callback_names[name]
     end
 
+    # msg:: New message received from source
+    # Returns formatted Carnivore::Message
     def format(msg)
       actor = Carnivore::Supervisor.supervisor[name]
       if(actor)
@@ -233,6 +271,8 @@ module Carnivore
       end
     end
 
+    # m:: Carnivore::Message
+    # Returns true if message is valid to be processed
     def valid_message?(m)
       if(message_registry)
         if(message_registry.valid?(m))
@@ -246,6 +286,8 @@ module Carnivore
       end
     end
 
+    # args:: Arguments
+    # Start processing messages from source
     def process(*args)
       while(run_process && !callbacks.empty?)
         msgs = Array(receive).flatten.compact.map do |m|

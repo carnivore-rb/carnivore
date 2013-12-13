@@ -5,6 +5,7 @@ module Carnivore
 
       attr_reader :registry, :supervisor
 
+      # Build a new supervisor
       def build!
         @registry = Celluloid::Registry.new
         @supervisor = run!(@registry)
@@ -12,6 +13,8 @@ module Carnivore
 
     end
 
+    # name:: Name of source
+    # Return source
     def [](name)
       instance = @registry[name]
       unless(instance)
