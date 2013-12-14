@@ -129,6 +129,14 @@ module Carnivore
       def sources
         @sources ? @sources.values : []
       end
+
+      def reset_comms!
+        self.class_eval do
+          alias_method :custom_transmit, :transmit
+          alias_method :transmit, :_transmit
+        end
+      end
+
     end
 
     include Celluloid
@@ -141,15 +149,19 @@ module Carnivore
     attr_reader :run_process
     attr_reader :callback_supervisor
     attr_reader :message_registry
+    attr_reader :message_loop
+    attr_reader :processing
 
     def initialize(args={})
       @callbacks = []
+      @message_loop = []
       @callback_names = {}
       @auto_process = args.fetch(:auto_process, true)
       @run_process = true
       @auto_confirm = !!args[:auto_confirm]
       @callback_supervisor = Carnivore::Supervisor.create!.last
       @message_registry = MessageRegistry.new if args[:prevent_duplicates]
+      @processing = false
       @name = args[:name] || Celluloid.uuid
       if(args[:callbacks])
         args[:callbacks].each do |name, block|
@@ -290,18 +302,59 @@ module Carnivore
     # args:: Arguments
     # Start processing messages from source
     def process(*args)
-      while(run_process && !callbacks.empty?)
-        msgs = Array(receive).flatten.compact.map do |m|
-          if(valid_message?(m))
-            format(m)
+      begin
+        while(run_process && !callbacks.empty?)
+          @processing = true
+          loop_msgs = future.loop_receive unless loop_msgs
+          remote_msgs = future.receive unless remote_msgs
+          if(loop_msgs.ready?)
+            msgs = loop_msgs.value
+            loop_msgs = nil
+          elsif(remote_msgs.ready?)
+            msgs = remote_msgs.value
+            remote_msgs = nil
+          else
+            msgs = []
           end
-        end.compact
-        msgs.each do |msg|
-          @callbacks.each do |name|
-            debug "Dispatching message<#{msg[:message].object_id}> to callback<#{name} (#{callback_name(name)})>"
-            callback_supervisor[callback_name(name)].async.call(msg)
+          msgs = [msgs].flatten.compact.map do |m|
+            if(valid_message?(m))
+              format(m)
+            end
+          end.compact
+          msgs.each do |msg|
+            @callbacks.each do |name|
+              debug "Dispatching message<#{msg[:message].object_id}> to callback<#{name} (#{callback_name(name)})>"
+              callback_supervisor[callback_name(name)].async.call(msg)
+            end
           end
+          sleep(1) if msgs.empty?
         end
+      ensure
+        @processing = false
+      end
+    end
+
+    # args:: unused
+    # Return queued message from internal loop
+    def loop_receive(*args)
+      @message_loop.shift
+    end
+
+    # message:: Message for delivery
+    # original_message:: unused
+    # args:: unused
+    # Push message onto internal loop queue
+    def loop_transmit(message, original_message=nil, args={})
+      @message_loop.push message
+    end
+
+    # args:: transmit args
+    # Send to local loop if processing otherwise use regular transmit
+    def _transmit(*args)
+      if(processing)
+        loop_transmit(*args)
+      else
+        custom_transmit(*args)
       end
     end
 
