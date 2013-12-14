@@ -22,6 +22,7 @@ module Carnivore
         require 'carnivore/supervisor'
         supervisor = Carnivore::Supervisor.build!
         Source.sources.each do |source|
+          source.klass.reset_comms!
           supervisor.supervise_as(
             source.source_hash[:name],
             source.klass,
