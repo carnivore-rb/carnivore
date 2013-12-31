@@ -39,7 +39,7 @@ module Carnivore
         begin
           supervisor.terminate
         rescue => e
-          debug "Exception raised during supervisor termination (restart cleanup): #{e}"
+          Celluloid::Logger.debug "Exception raised during supervisor termination (restart cleanup): #{e}"
         end
         retry
       rescue Exception => e
