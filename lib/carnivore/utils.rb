@@ -1,66 +1,13 @@
-require 'celluloid'
+require 'carnivore'
 
 module Carnivore
+
   module Utils
-
-    module Params
-
-      # hash:: Hash
-      # Symbolize keys in hash
-      def symbolize_hash(hash)
-        Hash[*(
-            hash.map do |k,v|
-              if(k.is_a?(String))
-                key = k.gsub(/(?<![A-Z])([A-Z])/, '_\1').sub(/^_/, '').downcase.to_sym
-              else
-                key = k
-              end
-              [
-                key,
-                v.is_a?(Hash) ? symbolize_hash(v) : v
-              ]
-            end.flatten(1)
-        )]
-      end
-
-      # hash:: Hash
-      # args:: Symbols or strings
-      # Follow path in hash provided by args and return value or nil
-      # if path is not valid
-      def retrieve(hash, *args)
-        valids = [::Hash, hash.is_a?(Class) ? hash : hash.class]
-        args.flatten.inject(hash) do |memo, key|
-          break unless valids.detect{ |valid_type|
-            memo.is_a?(valid_type) || memo == valid_type
-          }
-          memo[key.to_s] || memo[key.to_sym] || break
-        end
-      end
-    end
+    autoload :Params, 'carnivore/utils/params'
+    autoload :Logging, 'carnivore/utils/logging'
+    autoload :MessageRegistry, 'carnivore/utils/message_registry'
 
     extend Params
-
-    module Logging
-
-      # Define base logging types
-      %w(debug info warn error).each do |key|
-        define_method(key) do |string|
-          log(key, string)
-        end
-      end
-
-      # Log message
-      def log(*args)
-        if(args.empty?)
-          Celluloid::Logger
-        else
-          severity, string = args
-          Celluloid::Logger.send(severity.to_sym, "#{self}: #{string}")
-        end
-      end
-
-    end
-
     extend Logging
 
   end
