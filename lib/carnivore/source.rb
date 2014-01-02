@@ -118,6 +118,12 @@ module Carnivore
       raise
     end
 
+    # Ensure we cleanup our internal supervisor before bailing out
+    def terminate
+      callback_supervisor.terminate
+      super
+    end
+
     # Automatically confirm messages after dispatch
     def auto_confirm?
       @auto_confirm
