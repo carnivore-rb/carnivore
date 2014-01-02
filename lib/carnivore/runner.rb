@@ -41,6 +41,8 @@ module Carnivore
         rescue => e
           Celluloid::Logger.debug "Exception raised during supervisor termination (restart cleanup): #{e}"
         end
+        Celluloid::Logger.debug "Pausing restart for 10 seconds to prevent restart thrashing cycles"
+        sleep 10
         retry
       rescue Exception => e
         supervisor.terminate
