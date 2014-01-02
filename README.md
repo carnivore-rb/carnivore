@@ -30,7 +30,7 @@ Under the hood, callbacks are built into `Carnivore::Callback`
 instances. This class can be subclassed and provided directly
 instead of a simple block. This has the added bonus of being
 able to define the number of worker instances to be created
-for the callback (blocks default to 1):
+for the callback (blocks only get 1):
 
 ```ruby
 require 'carnivore'
@@ -56,7 +56,7 @@ end.start!
 
 ### Block execution
 
-It is important to note that when providing blocks, they will
+It is important to note that when providing blocks they will
 lose all reference to the scope in which they are defined. This
 is due to how `Callback` is implemented and is by design. Simply
 ensure that blocks are fully autonomous and everything will be
