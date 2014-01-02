@@ -12,5 +12,5 @@ Gem::Specification.new do |s|
   s.add_dependency 'celluloid'
   s.add_dependency 'mixlib-config'
   s.add_dependency 'multi_json'
-  s.files = Dir['**/*']
+  s.files = Dir['lib/**/*'] + %w(carnivore.gemspec README.md CHANGELOG.md)
 end
