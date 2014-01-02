@@ -1,3 +1,5 @@
+require 'carnivore'
+
 module Carnivore
   class Error < StandardError
     class DeadSupervisor < Error; end

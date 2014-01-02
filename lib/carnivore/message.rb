@@ -1,4 +1,4 @@
-require 'carnivore/source'
+require 'carnivore'
 
 module Carnivore
   class Message
@@ -12,10 +12,15 @@ module Carnivore
       @args = args.dup
     end
 
+    # Helper method to return keys available from `args`
+    def keys
+      args.keys
+    end
+
     # k:: key
     # Accessor into message
     def [](k)
-      @args[k.to_sym] || @args[k.to_s]
+      args[k.to_sym] || args[k.to_s]
     end
 
     # args:: Arguments
@@ -26,7 +31,7 @@ module Carnivore
 
     # Formatted inspection string
     def inspect
-      "<Carnivore::Message[#{self.object_id}] @args=#{args}>"
+      "<Carnivore::Message[#{self.object_id}] @args=#{args.inspect}>"
     end
 
     # String representation

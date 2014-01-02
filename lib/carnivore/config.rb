@@ -1,6 +1,6 @@
 require 'json'
 require 'mixlib/config'
-require 'carnivore/utils'
+require 'carnivore'
 
 module Carnivore
   class Config
@@ -9,6 +9,8 @@ module Carnivore
 
     class << self
 
+      # v:: Boolean value
+      # Set/get automatic symbolization of hash keys
       def auto_symbolize(v=nil)
         unless(v.nil?)
           @hash_symbolizer = !!v

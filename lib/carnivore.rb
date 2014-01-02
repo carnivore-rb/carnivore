@@ -1,2 +1,2 @@
+autoload :Carnivore, 'carnivore/runner'
 require 'carnivore/version'
-require 'carnivore/runner'

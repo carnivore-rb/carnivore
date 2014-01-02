@@ -1,73 +1,11 @@
 require 'digest/sha2'
 require 'celluloid'
-require 'carnivore/utils'
-require 'carnivore/callback'
-require 'carnivore/message'
-require 'carnivore/supervisor'
+require 'carnivore'
 
 module Carnivore
   class Source
 
-    # Registry used for preventing duplicate message processing
-    class MessageRegistry
-      def initialize
-        @store = []
-        @size = 100
-      end
-
-      # message:: Carnivore::Message
-      # Returns true if message has not been processed
-      def valid?(message)
-        checksum = sha(message)
-        found = @store.include?(checksum)
-        unless(found)
-          push(checksum)
-        end
-        !found
-      end
-
-      # item:: checksum
-      # Pushes checksum into store
-      def push(item)
-        @store.push(item)
-        if(@store.size > @size)
-          @store.shift
-        end
-        self
-      end
-
-      # thing:: Instance
-      # Return checksum for give instance
-      def sha(thing)
-        unless(thing.is_a?(String))
-          thing = MultiJson.dump(thing)
-        end
-        (Digest::SHA512.new << thing).hexdigest
-      end
-    end
-
-    # Container for holding source configuration. This allows setup to
-    # occur prior to the supervisor actually starting the sources
-    class SourceContainer
-
-      attr_reader :klass
-      attr_reader :source_hash
-
-      # class_name:: Name of source class
-      # args:: argument hash to pass to source instance
-      def initialize(class_name, args={})
-        @klass = class_name
-        @source_hash = args || {}
-        @source_hash[:callbacks] = {}
-      end
-
-      # name:: Name of callback
-      # klass:: Class of callback (optional)
-      # Add a callback to a source via Class or block
-      def add_callback(name, klass=nil, &block)
-        @source_hash[:callbacks][name] = klass || block
-      end
-    end
+    autoload :SourceContainer, 'carnivore/source_container'
 
     class << self
 
@@ -160,7 +98,9 @@ module Carnivore
       @run_process = true
       @auto_confirm = !!args[:auto_confirm]
       @callback_supervisor = Carnivore::Supervisor.create!.last
-      @message_registry = MessageRegistry.new if args[:prevent_duplicates]
+      if(args[:prevent_duplicates])
+        init_registry
+      end
       @processing = false
       @name = args[:name] || Celluloid.uuid
       if(args[:callbacks])
@@ -356,6 +296,12 @@ module Carnivore
       else
         custom_transmit(*args)
       end
+    end
+
+    # Load and initialize the message registry
+    def init_registry
+      require 'carnivore/message_registry'
+      @message_registry = MessageRegistry.new
     end
 
   end

@@ -1,4 +1,4 @@
-require 'carnivore/utils'
+require 'carnivore'
 
 module Carnivore
   class Callback
@@ -13,6 +13,10 @@ module Carnivore
 
     attr_reader :name
 
+    # name:: Name of the callback
+    # block:: Optional `Proc` to define the callback behavior
+    # Creates a new callback. Optional block to define callback
+    # behavior must be passed as a `Proc` instance, not a block.
     def initialize(name, block=nil)
       @name = name
       if(block.nil? && self.class == Callback)
@@ -42,9 +46,10 @@ module Carnivore
     # Pass message to registered callbacks
     def call(message)
       if(valid?(message))
+        debug ">> Received message is valid for this callback (#{message})"
         execute(message)
       else
-        debug 'Received message not valid for this callback'
+        debug "Invalid message for this callback 9#{message})"
       end
     rescue => e
       error "[callback: #{self}, source: #{message[:source]}, message: #{message[:message].object_id}]: #{e.class} - #{e}"

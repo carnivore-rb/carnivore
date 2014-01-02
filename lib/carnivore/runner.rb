@@ -1,8 +1,5 @@
 require 'celluloid'
-require 'carnivore/config'
-require 'carnivore/source'
-require 'carnivore/container'
-require 'carnivore/errors'
+require 'carnivore/autoloader'
 
 module Carnivore
   class << self
@@ -30,12 +27,15 @@ module Carnivore
           )
         end
         loop do
-          sleep 5 while supervisor.alive?
+          # We do a sleep loop so we can periodically check on the
+          # supervisor and ensure it is still alive. If it has died,
+          # raise exception to allow cleanup and restart attempt
+          sleep Carnivore::Config.get(:carnivore, :supervisor, :poll) || 5 while supervisor.alive?
           Celluloid::Logger.error 'Carnivore supervisor has died!'
           raise Carnivore::Error::DeadSupervisor.new
         end
       rescue Carnivore::Error::DeadSupervisor
-        warn "Received dead supervisor exception. Attempting to restart."
+        Celluloid::Logger.warn "Received dead supervisor exception. Attempting to restart."
         begin
           supervisor.terminate
         rescue => e

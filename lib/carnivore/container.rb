@@ -1,4 +1,4 @@
-require 'carnivore/utils'
+require 'carnivore'
 require 'celluloid/logger'
 
 module Carnivore

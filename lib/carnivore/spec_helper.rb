@@ -38,7 +38,7 @@ class MessageStore
   end
 end
 
-# dummy source to hold final tranmission and stuff in store
+# dummy source to hold final tranmission and stuff payload in store
 module Carnivore
   class Source
     class Spec < Source

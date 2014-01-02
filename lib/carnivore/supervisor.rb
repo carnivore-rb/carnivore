@@ -1,3 +1,6 @@
+require 'carnivore'
+require 'celluloid/supervision_group'
+
 module Carnivore
   class Supervisor < Celluloid::SupervisionGroup
 
