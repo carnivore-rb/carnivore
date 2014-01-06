@@ -1,5 +1,3 @@
-require 'carnivore'
-
 module Carnivore
   class Version < Gem::Version
   end
