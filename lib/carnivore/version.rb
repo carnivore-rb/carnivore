@@ -3,3 +3,5 @@ module Carnivore
   end
   VERSION = Version.new('0.1.11')
 end
+
+require 'carnivore'

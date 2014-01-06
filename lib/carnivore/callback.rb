@@ -9,7 +9,7 @@ module Carnivore
     end
 
     include Celluloid
-    include Utils::Logging
+    include Carnivore::Utils::Logging
 
     attr_reader :name
 
