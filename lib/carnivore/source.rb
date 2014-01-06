@@ -70,8 +70,13 @@ module Carnivore
 
       def reset_comms!
         self.class_eval do
-          alias_method :custom_transmit, :transmit
-          alias_method :transmit, :_transmit
+          unless(method_defined?(:reset_communications?))
+            alias_method :custom_transmit, :transmit
+            alias_method :transmit, :_transmit
+            def reset_communications?
+              true
+            end
+          end
         end
       end
 
