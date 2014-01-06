@@ -1,4 +1,3 @@
-require 'celluloid'
 require 'carnivore/autoloader'
 
 module Carnivore
