@@ -49,7 +49,7 @@ module Carnivore
         debug ">> Received message is valid for this callback (#{message})"
         execute(message)
       else
-        debug "Invalid message for this callback 9#{message})"
+        debug "Invalid message for this callback #{message})"
       end
     rescue => e
       error "[callback: #{self}, source: #{message[:source]}, message: #{message[:message].object_id}]: #{e.class} - #{e}"
