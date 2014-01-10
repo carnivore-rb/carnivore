@@ -1,3 +1,12 @@
+# v0.2.0
+* Remove `fog` from dependency list
+* Add common spec helper for testing
+* Only start sources if callbacks are defined
+* Add custom supervisor with isolated registry
+* Include auto-restart support
+* Loop local messages internally instead of transmit/retrieve loop
+* Use auto loading to clean things up
+
 # v0.1.10
 * Remove builtin sources
 * Allow optional auto-symbolize
