@@ -93,11 +93,13 @@ module Carnivore
     attr_reader :callback_supervisor
     attr_reader :message_registry
     attr_reader :message_loop
+    attr_reader :message_remote
     attr_reader :processing
 
     def initialize(args={})
       @callbacks = []
-      @message_loop = []
+      @message_loop = Queue.new
+      @message_remote = Queue.new
       @callback_names = {}
       @auto_process = args.fetch(:auto_process, true)
       @run_process = true
@@ -256,17 +258,11 @@ module Carnivore
       begin
         while(run_process && !callbacks.empty?)
           @processing = true
-          loop_msgs = future.loop_receive unless loop_msgs
-          remote_msgs = future.receive unless remote_msgs
-          if(loop_msgs.ready?)
-            msgs = loop_msgs.value
-            loop_msgs = nil
-          elsif(remote_msgs.ready?)
-            msgs = remote_msgs.value
-            remote_msgs = nil
-          else
-            msgs = []
-          end
+          async.receive_messages
+          wait(:messages_available)
+          msgs = []
+          msgs.push message_loop.pop unless message_loop.empty?
+          msgs.push message_remote.pop unless message_remote.empty?
           msgs = [msgs].flatten.compact.map do |m|
             if(valid_message?(m))
               format(m)
@@ -278,17 +274,26 @@ module Carnivore
               callback_supervisor[callback_name(name)].async.call(msg)
             end
           end
-          sleep(1) if msgs.empty?
+          if(msgs.empty?)
+            sleep(1)
+          end
         end
       ensure
         @processing = false
       end
     end
 
+    def receive_messages
+      loop do
+        message_remote.push receive
+        signal(:messages_available)
+      end
+    end
+
     # args:: unused
     # Return queued message from internal loop
     def loop_receive(*args)
-      @message_loop.shift
+      message_loop.shift
     end
 
     # message:: Message for delivery
@@ -296,17 +301,22 @@ module Carnivore
     # args:: unused
     # Push message onto internal loop queue
     def loop_transmit(message, original_message=nil, args={})
-      @message_loop.push message
+      message_loop.push message
+      signal(:messages_available)
     end
 
     # args:: transmit args
     # Send to local loop if processing otherwise use regular transmit
     def _transmit(*args)
-      if(processing)
+      if(loop_enabled? && processing)
         loop_transmit(*args)
       else
         custom_transmit(*args)
       end
+    end
+
+    def loop_enabled?
+      false
     end
 
     # Load and initialize the message registry
