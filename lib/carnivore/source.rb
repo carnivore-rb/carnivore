@@ -259,7 +259,9 @@ module Carnivore
         while(run_process && !callbacks.empty?)
           @processing = true
           async.receive_messages
-          wait(:messages_available)
+          if(message_loop.empty? && message_remote.empty?)
+            wait(:messages_available)
+          end
           msgs = []
           msgs.push message_loop.pop unless message_loop.empty?
           msgs.push message_remote.pop unless message_remote.empty?
@@ -273,9 +275,6 @@ module Carnivore
               debug "Dispatching message<#{msg[:message].object_id}> to callback<#{name} (#{callback_name(name)})>"
               callback_supervisor[callback_name(name)].async.call(msg)
             end
-          end
-          if(msgs.empty?)
-            sleep(1)
           end
         end
       ensure
