@@ -95,7 +95,6 @@ module Carnivore
     attr_reader :message_loop
     attr_reader :message_remote
     attr_reader :processing
-    attr_reader :orphan_callback
 
     def initialize(args={})
       @callbacks = []
@@ -110,7 +109,7 @@ module Carnivore
         unless(args[:orphan_callback].is_a?(Proc))
           abort TypeError.new("Expected `Proc` type for `orphan_callback` but received `#{args[:orphan_callback].class}`")
         end
-        @orphan_callback = args[:orphan_callback]
+        define_singleton_method(:orphan_callback, &args[:orphan_callback])
       end
       if(args[:prevent_duplicates])
         init_registry
@@ -278,7 +277,7 @@ module Carnivore
             end
           end.compact
           msgs.each do |msg|
-            if(orphan_callback)
+            if(respond_to?(:orphan_callback))
               valid_callbacks = callbacks.find_all do |name|
                 callback_supervisor[callback_name(name)].valid?(msg)
               end
@@ -291,7 +290,7 @@ module Carnivore
             end
             if(valid_callbacks.empty?)
               warn "Received message was not processed through any callbacks on this source: #{msg}"
-              orphan_callback.call(current_actor, msg) if orphan_callback
+              orphan_callback(current_actor, msg) if respond_to?(:orphan_callback)
             end
           end
         end
