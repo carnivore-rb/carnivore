@@ -95,6 +95,7 @@ module Carnivore
     attr_reader :message_loop
     attr_reader :message_remote
     attr_reader :processing
+    attr_reader :orphan_callback
 
     def initialize(args={})
       @callbacks = []
@@ -105,6 +106,12 @@ module Carnivore
       @run_process = true
       @auto_confirm = !!args[:auto_confirm]
       @callback_supervisor = Carnivore::Supervisor.create!.last
+      if(args[:orphan_callback])
+        unless(args[:orphan_callback].is_a?(Proc))
+          abort TypeError.new("Expected `Proc` type for `orphan_callback` but received `#{args[:orphan_callback].class}`")
+        end
+        @orphan_callback = args[:orphan_callback]
+      end
       if(args[:prevent_duplicates])
         init_registry
       end
@@ -271,9 +278,20 @@ module Carnivore
             end
           end.compact
           msgs.each do |msg|
-            @callbacks.each do |name|
+            if(orphan_callback)
+              valid_callbacks = callbacks.find_all do |name|
+                callback_supervisor[callback_name(name)].valid?(msg)
+              end
+            else
+              valid_callbacks = callbacks
+            end
+            valid_callbacks.each do |name|
               debug "Dispatching message<#{msg[:message].object_id}> to callback<#{name} (#{callback_name(name)})>"
               callback_supervisor[callback_name(name)].async.call(msg)
+            end
+            if(valid_callbacks.empty?)
+              warn "Received message was not processed through any callbacks on this source: #{msg}"
+              orphan_callback.call(current_actor, msg) if orphan_callback
             end
           end
         end
