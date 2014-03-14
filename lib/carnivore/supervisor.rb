@@ -26,7 +26,8 @@ module Carnivore
         if(supervisor)
           begin
             supervisor.terminate
-          rescue Celluloid::DeadActorError
+          rescue Celluloid::DeadActorError => e
+            Celluloid::Logger.warn "Default supervisor is already in dead state (#{e.class}: #{e})"
           end
           @supervisor = nil
           @registry = nil
@@ -43,7 +44,7 @@ module Carnivore
       unless(instance)
         if(member = @members.detect{|m| m && m.name.to_s == name.to_s})
           Celluloid::Logger.warn "Found missing actor in member list. Attempting to restart manually."
-          member.restart if member.actor
+          member.restart
           instance = @registry[name]
           unless(instance)
             Celluloid::Logger.error "Actor restart failed to make it available in the registry! (#{name})"
