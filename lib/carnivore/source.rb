@@ -16,7 +16,7 @@ module Carnivore
       def build(args={})
         [:args, :type].each do |key|
           unless(args.has_key?(key))
-            raise ArgumentError.new "Missing required parameter `:#{key}`"
+            abort ArgumentError.new "Missing required parameter `:#{key}`"
           end
         end
         require Source.require_path(args[:type]) || "carnivore/source/#{args[:type]}"
@@ -59,7 +59,7 @@ module Carnivore
         if(@sources && @sources[name.to_sym])
           @sources[name.to_sym]
         else
-          raise KeyError.new("Requested named source is not registered: #{name}")
+          abort KeyError.new("Requested named source is not registered: #{name}")
         end
       end
 
@@ -107,7 +107,7 @@ module Carnivore
       @callback_supervisor = Carnivore::Supervisor.create!.last
       if(args[:orphan_callback])
         unless(args[:orphan_callback].is_a?(Proc))
-          abort TypeError.new("Expected `Proc` type for `orphan_callback` but received `#{args[:orphan_callback].class}`")
+          raise TypeError.new("Expected `Proc` type for `orphan_callback` but received `#{args[:orphan_callback].class}`")
         end
         define_singleton_method(:orphan_callback, &args[:orphan_callback])
       end
@@ -213,7 +213,7 @@ module Carnivore
     # Remove the named callback from the source
     def remove_callback(name)
       unless(@callbacks.include?(callback_name(name)))
-        raise NameError.new("Failed to locate callback named: #{name}")
+        abort NameError.new("Failed to locate callback named: #{name}")
       end
       actors[callback_name(name)].terminate
       @callbacks.delete(name)

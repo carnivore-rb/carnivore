@@ -20,7 +20,16 @@ end
 
 # Simple waiter method to stall testing
 def source_wait(name='wait')
-  sleep(ENV.fetch("CARNIVORE_SOURCE_#{name.to_s.upcase}", 0.2).to_f)
+  total = ENV.fetch("CARNIVORE_SOURCE_#{name.to_s.upcase}", 1.0).to_f
+  if(block_given?)
+    elapsed = 0.0
+    until(yield || elapsed >= total)
+      sleep(0.1)
+      elapsed += 0.1
+    end
+  else
+    sleep(total)
+  end
 end
 
 # dummy store that should never be used for anything real
