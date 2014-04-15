@@ -44,10 +44,17 @@ module Carnivore
       unless(instance)
         if(member = @members.detect{|m| m && m.name.to_s == name.to_s})
           Celluloid::Logger.warn "Found missing actor in member list. Attempting to restart manually."
-          member.restart
-          instance = @registry[name]
-          unless(instance)
-            Celluloid::Logger.error "Actor restart failed to make it available in the registry! (#{name})"
+          begin
+            member.restart
+            instance = @registry[name]
+            unless(instance)
+              Celluloid::Logger.error "Actor restart failed to make it available in the registry! (#{name})"
+              raise KeyError.new("Failed to locate requested member in supervision group! (#{name})"
+            end
+          rescue => e
+            Celluloid::Logger.error "Actor restart failure: #{e.class}: #{e}"
+            Celluloid::Logger.debug "Actor restart backtrace: #{e.class}: #{e}\n#{e.backtrace.join("\n")}"
+            abort e
           end
         end
       end
