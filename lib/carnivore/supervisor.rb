@@ -6,12 +6,11 @@ module Carnivore
 
     class << self
 
-      attr_reader :registry, :supervisor
-
       # Build a new supervisor
       def build!
-        @registry, @supervisor = create!
-        @supervisor
+        r, s = create!
+        registry(r)
+        supervisor(s)
       end
 
       # Create a new supervisor
@@ -19,6 +18,20 @@ module Carnivore
       def create!
         registry = Celluloid::Registry.new
         [registry, run!(registry)]
+      end
+
+      def supervisor(sup=nil)
+        if(sup)
+          Thread.current[:carnivore_supervisor] = sup
+        end
+        Thread.current[:carnivore_supervisor]
+      end
+
+      def registry(reg=nil)
+        if(reg)
+          Thread.current[:carnivore_registry] = reg
+        end
+        Thread.current[:carnivore_registry]
       end
 
       # Destroy the registered supervisor
@@ -49,7 +62,7 @@ module Carnivore
             instance = @registry[name]
             unless(instance)
               Celluloid::Logger.error "Actor restart failed to make it available in the registry! (#{name})"
-              raise KeyError.new("Failed to locate requested member in supervision group! (#{name})"
+              raise KeyError.new("Failed to locate requested member in supervision group! (#{name})")
             end
           rescue => e
             Celluloid::Logger.error "Actor restart failure: #{e.class}: #{e}"

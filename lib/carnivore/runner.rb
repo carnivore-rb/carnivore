@@ -44,7 +44,9 @@ module Carnivore
         sleep 10
         retry
       rescue Exception => e
-        supervisor.terminate
+        Celluloid::Logger.warn "Exception type encountered forcing shutdown - #{e.class}: #{e}"
+        Celluloid::Logger.debug "Shutdown exception info: #{e.class}: #{e}\n#{e.backtrace.join("\n")}"
+        supervisor.terminate if supervisor
         # Gracefully shut down
       end
     end
