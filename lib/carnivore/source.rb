@@ -85,6 +85,8 @@ module Carnivore
     include Celluloid
     include Utils::Logging
 
+    finalizer :teardown_cleanup
+
     attr_reader :name
     attr_reader :callbacks
     attr_reader :auto_confirm
@@ -97,6 +99,7 @@ module Carnivore
     attr_reader :processing
 
     def initialize(args={})
+      @args = args.dup
       @callbacks = []
       @message_loop = Queue.new
       @message_remote = Queue.new
@@ -132,9 +135,9 @@ module Carnivore
     end
 
     # Ensure we cleanup our internal supervisor before bailing out
-    def terminate
+    def teardown_cleanup
+      warn "Terminating!"
       callback_supervisor.terminate
-      super
     end
 
     # Automatically confirm messages after dispatch
