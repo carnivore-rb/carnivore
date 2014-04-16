@@ -136,7 +136,7 @@ module Carnivore
 
     # Ensure we cleanup our internal supervisor before bailing out
     def teardown_cleanup
-      warn "Terminating!"
+      warn 'Termination request received. Tearing down!'
       callback_supervisor.terminate
     end
 
