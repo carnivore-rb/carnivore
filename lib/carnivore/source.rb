@@ -59,6 +59,7 @@ module Carnivore
         if(@sources && @sources[name.to_sym])
           @sources[name.to_sym]
         else
+          Celluloid.logger.error "Source lookup failed (name: #{name})"
           abort KeyError.new("Requested named source is not registered: #{name}")
         end
       end
@@ -199,14 +200,14 @@ module Carnivore
           return self
         elsif(size == 1)
           debug "Adding callback class (#{block_or_class}) under supervision. Name: #{callback_name(name)}"
-          callback_supervisor.supervise_as callback_name(name), block_or_class, name
+          callback_supervisor.supervise_as callback_name(name), block_or_class, name, current_actor
         else
           debug "Adding callback class (#{block_or_class}) under supervision pool (#{size} workers). Name: #{callback_name(name)}"
-          callback_supervisor.pool block_or_class, as: callback_name(name), size: size, args: [name]
+          callback_supervisor.pool block_or_class, as: callback_name(name), size: size, args: [name, current_actor]
         end
       else
         debug "Adding custom callback class  from block (#{block_or_class}) under supervision. Name: #{callback_name(name)}"
-        callback_supervisor.supervise_as callback_name(name), Callback, name, block_or_class
+        callback_supervisor.supervise_as callback_name(name), Callback, name, current_actor, block_or_class
       end
       callbacks.push(name).uniq!
       self
