@@ -11,14 +11,15 @@ module Carnivore
     include Celluloid
     include Carnivore::Utils::Logging
 
-    attr_reader :name
+    attr_reader :name, :source
 
     # name:: Name of the callback
     # block:: Optional `Proc` to define the callback behavior
     # Creates a new callback. Optional block to define callback
     # behavior must be passed as a `Proc` instance, not a block.
-    def initialize(name, block=nil)
+    def initialize(name, source, block=nil)
       @name = name
+      @source = source
       if(block.nil? && self.class == Callback)
         raise ArgumentError.new 'Block is required for dynamic callbacks!'
       end
