@@ -51,6 +51,14 @@ end
 module Carnivore
   class Source
     class Spec < Source
+
+      attr_reader :confirmed
+
+      def initialize(*args, &block)
+        super
+        @confirmed = []
+      end
+
       def setup(*args)
         MessageStore.init
       end
@@ -62,6 +70,18 @@ module Carnivore
       def transmit(*args)
         MessageStore.messages << args.first
       end
+
+      def format(msg)
+        Message.new(
+          :message => msg,
+          :source => self
+        )
+      end
+
+      def confirm(payload, *args)
+        confirmed << payload
+      end
+
     end
   end
 end
