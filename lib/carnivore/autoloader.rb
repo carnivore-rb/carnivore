@@ -11,3 +11,5 @@ module Carnivore
   autoload :Utils, 'carnivore/utils'
   autoload :Version, 'carnivore/version'
 end
+
+autoload :Smash, 'carnivore/utils/smash'
