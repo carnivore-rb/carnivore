@@ -240,7 +240,7 @@ module Carnivore
       if(actor)
         Message.new(
           :message => msg,
-          :source => actor
+          :source => actor.current_actor
         )
       else
         abort "Failed to locate self in registry (#{name})"
