@@ -50,5 +50,9 @@ module Carnivore
 
     attr_reader :registry
 
+    def [](k)
+      registry[k]
+    end
+
   end
 end
