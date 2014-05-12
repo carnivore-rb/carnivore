@@ -10,10 +10,11 @@ module Carnivore
     # @param args [Hash]
     # @option args [Carnivore::Source] :source origin source of message
     def initialize(args={})
+      args = args.to_smash
       unless(args[:source])
         raise ArgumentError.new("A valid `Carnivore::Source` name must be provided via `:source`")
       end
-      @args = Smash.new(args)
+      @args = args
     end
 
     # @return [Array<String>] keys available in message hash
