@@ -19,6 +19,9 @@ MiniTest::Spec.before do
 end
 
 # Simple waiter method to stall testing
+#
+# @param name [String, Symbol] fetch wait time from environment variable
+# @return [Numeric] seconds sleeping
 def source_wait(name='wait')
   total = ENV.fetch("CARNIVORE_SOURCE_#{name.to_s.upcase}", 1.0).to_f
   if(block_given?)
@@ -27,19 +30,25 @@ def source_wait(name='wait')
       sleep(0.1)
       elapsed += 0.1
     end
+    elapsed
   else
     sleep(total)
+    total
   end
 end
 
-# dummy store that should never be used for anything real
+# Dummy message store used for testing
 class MessageStore
   class << self
 
+    # Initialize message storage
+    #
+    # @return [Array]
     def init
       @messages = []
     end
 
+    # @return [Array] messages
     def messages
       @messages
     end
@@ -47,30 +56,48 @@ class MessageStore
   end
 end
 
-# dummy source to hold final tranmission and stuff payload in store
 module Carnivore
   class Source
+    # Dummy source for testing used to capture payloads for inspection
     class Spec < Source
 
+      # @return [Array] messages confirmed
       attr_reader :confirmed
 
+      # Creates new spec source
+      #
+      # @param args [Object] argument list (passed to Source)
+      # @yield source block (passed to Source)
       def initialize(*args, &block)
         super
         @confirmed = []
       end
 
+      # Setup the message store for payload storage
+      #
+      # @return [Array] message storage
       def setup(*args)
         MessageStore.init
       end
 
+      # Dummy receiver
       def receive(*args)
         wait(:forever)
       end
 
+      # Capture messages transmitted
+      #
+      # @param args [Object] argument list
+      # @return [TrueClass]
       def transmit(*args)
         MessageStore.messages << args.first
+        true
       end
 
+      # Format the message
+      #
+      # @param msg [Object] message payload
+      # @return [Carnivore::Message]
       def format(msg)
         Message.new(
           :message => msg,
@@ -78,8 +105,14 @@ module Carnivore
         )
       end
 
+      # Capture confirmed messages
+      #
+      # @param payload [Object] payload of message
+      # @param args [Object] argument list (unused)
+      # @return [TrueClass]
       def confirm(payload, *args)
         confirmed << payload
+        true
       end
 
     end

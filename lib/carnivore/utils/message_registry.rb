@@ -1,14 +1,19 @@
 module Carnivore
   module Utils
-      # Registry used for preventing duplicate message processing
+
+    # Registry used for preventing duplicate message processing
     class MessageRegistry
+
+      # Create new instance
       def initialize
         @store = []
         @size = 100
       end
 
-      # message:: Carnivore::Message
-      # Returns true if message has not been processed
+      # Validity of message (not found within registry)
+      #
+      # @param message [Carnivore::Message]
+      # @return [TrueClass, FalseClass]
       def valid?(message)
         checksum = sha(message)
         found = @store.include?(checksum)
@@ -18,8 +23,10 @@ module Carnivore
         !found
       end
 
-      # item:: checksum
-      # Pushes checksum into store
+      # Register checksum into registry
+      #
+      # @param item [String] checksum
+      # @return [self]
       def push(item)
         @store.push(item)
         if(@store.size > @size)
@@ -28,8 +35,10 @@ module Carnivore
         self
       end
 
-      # thing:: Instance
-      # Return checksum for give instance
+      # Generate checksum for given item
+      #
+      # @param thing [Object]
+      # @return [String] checksum
       def sha(thing)
         unless(thing.is_a?(String))
           thing = MultiJson.dump(thing)

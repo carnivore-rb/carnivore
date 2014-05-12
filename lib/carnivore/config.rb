@@ -3,14 +3,18 @@ require 'mixlib/config'
 require 'carnivore'
 
 module Carnivore
+  # Configuration helper
   class Config
 
     extend Mixlib::Config
 
     class << self
 
-      # v:: Boolean value
       # Set/get automatic symbolization of hash keys
+      #
+      # @param v [Object] truthy or falsey value
+      # @return [TrueClass, FalseClass]
+      # v:: Boolean value
       def auto_symbolize(v=nil)
         unless(v.nil?)
           @hash_symbolizer = !!v
@@ -18,16 +22,20 @@ module Carnivore
         @hash_symbolizer.nil? ? false : @hash_symbolizer
       end
 
-      # args:: configuration hash
       # Merge provided args into configuration
+      #
+      # @param args [Hash]
+      # @return [self]
       def configure(args)
         build(args[:config_path]) if args[:config_path]
         self.merge!(args)
         self
       end
 
-      # path_or_hash:: Path to JSON file or configuration Hash
       # Populates the configuration
+      #
+      # @param path_or_hash [String, Hash] Path to JSON file or configuration hash
+      # @return [self]
       def build(path_or_hash)
         if(path_or_hash.is_a?(Hash))
           conf = path_or_hash
@@ -45,18 +53,20 @@ module Carnivore
         self
       end
 
-      # ary: keys into a hash
-      # Returns value if exists or nil
-      #  Example:
-      #    Config.build(:my_app => {:port => 30})
-      #    Config.get(:my_app, :port) => 30
-      #    Config.get(:my_app, :host) => nil
-      #    Config.get(:other_app, :port) => nil
-      #    Config.get(:my_app, :mail, :server) => nil
+      # Fetch value from configuration
+      #
+      # @param ary [String, Symbol] list of strings or symbols as hash path
+      # @return [Object] return value or nil
+      # @example
+      #   Config.build(:my_app => {:port => 30})
+      #   Config.get(:my_app, :port) => 30
+      #   Config.get(:my_app, :host) => nil
+      #   Config.get(:other_app, :port) => nil
+      #   Config.get(:my_app, :mail, :server) => nil
       def get(*ary)
         value = Carnivore::Utils.retrieve(self, *ary)
         if(value.is_a?(Hash) && auto_symbolize)
-          Carnivore::Utils.symbolize_hash(value)
+          Smash.new(value)
         else
           value
         end

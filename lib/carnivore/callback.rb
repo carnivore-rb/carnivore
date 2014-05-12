@@ -1,6 +1,7 @@
 require 'carnivore'
 
 module Carnivore
+  # Payload modifier
   class Callback
 
     class << self
@@ -10,13 +11,18 @@ module Carnivore
 
     include Celluloid
     include Carnivore::Utils::Logging
+    # @!parse include Carnivore::Utils::Logging
 
-    attr_reader :name, :source
+    # @return [String, Symbol] name of callback
+    attr_reader :name
+    # @return [Carnivore::Source] source this callback is attached
+    attr_reader :source
 
-    # name:: Name of the callback
-    # block:: Optional `Proc` to define the callback behavior
     # Creates a new callback. Optional block to define callback
     # behavior must be passed as a `Proc` instance, not a block.
+    #
+    # @param name [String, Symbol] name of the callback
+    # @param block [Proc] optionally define the callback behavior
     def initialize(name, source, block=nil)
       @name = name
       @source = source
@@ -29,32 +35,41 @@ module Carnivore
 
     # Used by custom callback classes for setup
     def setup
+      debug 'No custom setup defined'
     end
 
     # Provide nice output when printed
+    #
+    # @return [String]
     def inspect
       "callback<#{self.name}:#{self.object_id}>"
     end
     alias_method :to_s, :inspect
 
-    # message:: Carnivore::Message
-    # Return true if message should be handled by this callback
+    # Message is valid for this callback
+    #
+    # @param message [Carnivore::Message]
+    # @return [TrueClass, FalseClass]
     def valid?(message)
       true
     end
 
-    # message:: Carnivore::Message
-    # Pass message to registered callbacks
+    # Execute callback against given message
+    #
+    # @param message [Carnivore::Message]
     def call(message)
-      if(valid?(message))
-        debug ">> Received message is valid for this callback (#{message})"
-        execute(message)
-      else
-        debug "Invalid message for this callback #{message})"
+      begin
+        if(valid?(message))
+          debug ">> Received message is valid for this callback (#{message})"
+          execute(message)
+        else
+          debug "Invalid message for this callback #{message})"
+        end
+      rescue => e
+        error "[callback: #{self}, source: #{message[:source]}, message: #{message[:message].object_id}]: #{e.class} - #{e}"
+        debug "#{e.class}: #{e}\n#{e.backtrace.join("\n")}"
+        nil
       end
-    rescue => e
-      error "[callback: #{self}, source: #{message[:source]}, message: #{message[:message].object_id}]: #{e.class} - #{e}"
-      debug "#{e.class}: #{e}\n#{e.backtrace.join("\n")}"
     end
 
   end

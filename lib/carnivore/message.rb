@@ -1,40 +1,46 @@
 require 'carnivore'
 
 module Carnivore
+  # Wraps a message (Hash) with Carnivore specific helpers
   class Message
 
+    # @return [Hash] underlying message hash
     attr_reader :args
 
+    # @param args [Hash]
+    # @option args [Carnivore::Source] :source origin source of message
     def initialize(args={})
       unless(args[:source])
         raise ArgumentError.new("A valid `Carnivore::Source` name must be provided via `:source`")
       end
-      @args = args.dup
+      @args = Smash.new(args)
     end
 
-    # Helper method to return keys available from `args`
+    # @return [Array<String>] keys available in message hash
     def keys
       args.keys
     end
 
-    # k:: key
-    # Accessor into message
+    # Message accessor
+    #
+    # @param k [String, Symbol]
     def [](k)
-      args[k.to_sym] || args[k.to_s]
+      args[k]
     end
 
-    # args:: Arguments
     # Confirm message was received on source
+    #
+    # @param args [Object] list passed to Carnivore::Source#confirm
     def confirm!(*args)
       self[:source].confirm(*([self] + args).flatten(1).compact)
     end
 
-    # Formatted inspection string
+    # @return [String] formatted inspection string
     def inspect
       "<Carnivore::Message[#{self.object_id}] @args=#{args.inspect}>"
     end
 
-    # String representation
+    # @return [String] string representation
     def to_s
       "<Carnivore::Message:#{self.object_id}>"
     end

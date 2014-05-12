@@ -1,17 +1,19 @@
-require 'carnivore/autoloader'
+require 'carnivore'
 
 module Carnivore
   class << self
 
-    # block:: Block of configuration
     # Add configuration to Carnivore
+    #
+    # @yield block of configuration
+    # @return [self]
     def configure(&block)
       mod = Container.new
       mod.instance_exec(mod, &block)
       self
     end
 
-    # Start carnivore
+    # Start the Carnivore subsystem
     def start!
       supervisor = nil
       begin

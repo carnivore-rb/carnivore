@@ -1,10 +1,13 @@
 module Carnivore
   module Utils
 
+    # Parameter helper methods generally aimed at Hash instances
     module Params
 
-      # hash:: Hash
       # Symbolize keys in hash
+      #
+      # @param hash [Hash]
+      # @return [Hash] new hash instance with symbolized keys
       def symbolize_hash(hash)
         Hash[*(
             hash.map do |k,v|
@@ -21,10 +24,11 @@ module Carnivore
         )]
       end
 
-      # hash:: Hash
-      # args:: Symbols or strings
-      # Follow path in hash provided by args and return value or nil
-      # if path is not valid
+      # Retrieve value in hash at given path
+      #
+      # @param hash [Hash] hash to walk into
+      # @param args [String, Symbol] argument list to walk in hash
+      # @return [Object, NilClass]
       def retrieve(hash, *args)
         valids = [::Hash, hash.is_a?(Class) ? hash : hash.class]
         args.flatten.inject(hash) do |memo, key|

@@ -2,6 +2,7 @@ require 'carnivore'
 
 module Carnivore
 
+  # Helper utilities
   module Utils
     autoload :Params, 'carnivore/utils/params'
     autoload :Logging, 'carnivore/utils/logging'

@@ -3,16 +3,20 @@ require 'celluloid'
 require 'carnivore'
 
 module Carnivore
+  # Message source
+  # @abstract
   class Source
 
     autoload :SourceContainer, 'carnivore/source_container'
 
     class << self
 
-      # args:: Hash
-      #  :type -> Source type
-      #  :args -> arguments for `Source` instance
-      # Builds a source container of `:type`
+      # Builds a source container
+      #
+      # @param args [Hash] source configuration
+      # @option args [String, Symbol] :type type of source to build
+      # @option args [Hash] :args configuration hash for source initialization
+      # @return [SourceContainer]
       def build(args={})
         [:args, :type].each do |key|
           unless(args.has_key?(key))
@@ -28,33 +32,41 @@ module Carnivore
         inst
       end
 
-      # type:: Symbol of type of source
-      # require_path:: Path to feed to `require`
-      # Registers a source
+      # Register a new source type
+      #
+      # @param type [Symbol] name of source type
+      # @param require_path [String] path to require when requested
+      # @return [TrueClass]
       def provide(type, require_path)
-        @source_klass ||= {}
-        @source_klass[type.to_sym] = require_path
+        @source_klass ||= Smash.new
+        @source_klass[type] = require_path
         true
       end
 
-      # type: Symbol of source type
-      # Returns register path for given type of source
+      # Registered path for given source type
+      #
+      # @param type [String, Symbol] name of source type
+      # @return [String, NilClass]
       def require_path(type)
-        @source_klass ||= {}
-        @source_klass[type.to_sym]
+        @source_klass ||= Smash.new
+        @source_klass[type]
       end
 
-      # name:: Name of source
-      # inst:: SourceContainer
       # Register the container
+      #
+      # @param name [String, Symbol] name of source
+      # @param inst [SourceContainer]
+      # @return [TrueClass]
       def register(name, inst)
-        @sources ||= {}
-        @sources[name.to_sym] = inst
+        @sources ||= Smash.new
+        @sources[name] = inst
         true
       end
 
-      # name:: Name of registered source
-      # Return source container
+      # Source container with given name
+      #
+      # @param name [String, Symbol] name of source
+      # @return [SourceContainer]
       def source(name)
         if(@sources && @sources[name.to_sym])
           @sources[name.to_sym]
@@ -64,11 +76,12 @@ module Carnivore
         end
       end
 
-      # Registered containers
+      # @return [Array<SourceContainer>] registered source containers
       def sources
         @sources ? @sources.values : []
       end
 
+      # Reset communication methods within class
       def reset_comms!
         self.class_eval do
           unless(method_defined?(:reset_communications?))
@@ -85,27 +98,47 @@ module Carnivore
 
     include Celluloid
     include Utils::Logging
+    # @!parse include Carnivore::Utils::Logging
 
     finalizer :teardown_cleanup
 
+    # @return [String, Symbol] name of source
     attr_reader :name
+    # @return [Array<Callback>] registered callbacks
     attr_reader :callbacks
+    # @return [TrueClass, FalseClass] auto confirm received messages
     attr_reader :auto_confirm
+    # @return [TrueClass, FalseClass] start source processing on initialization
     attr_reader :auto_process
+    # @return [TrueClass, FalseClass] message processing control switch
     attr_reader :run_process
+    # @return [Carnivore::Supervisor] supervisor maintaining callback instances
     attr_reader :callback_supervisor
+    # @return [Hash] registry of processed messages
     attr_reader :message_registry
+    # @return [Queue] local loop message queue
     attr_reader :message_loop
+    # @return [Queue] remote message queue
     attr_reader :message_remote
+    # @retrurn [TrueClass, FalseClass] currently processing a message
     attr_reader :processing
 
+    # Create new Source
+    #
+    # @param args [Hash]
+    # @option args [String, Symbol] :name name of source
+    # @option args [TrueClass, FalseClass] :auto_process start processing on initialization
+    # @option args [TrueClass, FalseClass] :auto_confirm confirm messages automatically on receive
+    # @option args [Proc] :orphan_callback execute block when no callbacks are valid for message
+    # @option args [TrueClass, FalseClass] :prevent_duplicates setup and use message registry
+    # @option args [Array<Callback>] :callbacks callbacks to register on this source
     def initialize(args={})
-      @args = args.dup
+      @args = Smash.new(args)
       @callbacks = []
       @message_loop = Queue.new
       @message_remote = Queue.new
       @callback_names = {}
-      @auto_process = args.fetch(:auto_process, true)
+      @auto_process = !!args.fetch(:auto_process, true)
       @run_process = true
       @auto_confirm = !!args[:auto_confirm]
       @callback_supervisor = Carnivore::Supervisor.create!.last
@@ -141,56 +174,65 @@ module Carnivore
       callback_supervisor.terminate
     end
 
-    # Automatically confirm messages after dispatch
+    # @return [TrueClass, FalseClass] automatic message confirmation enabled
     def auto_confirm?
       @auto_confirm
     end
 
-    # Return string for inspection
+    # @return [String] inspection formatted string
     def inspect
       "<#{self.class.name}:#{object_id} @name=#{name} @callbacks=#{Hash[*callbacks.map{|k,v| [k,v.object_id]}.flatten]}>"
     end
 
-    # Return string of instance
+    # @return [String] stringified instance
     def to_s
       "<#{self.class.name}:#{object_id} @name=#{name}>"
     end
 
-    # args:: Argument hash used to initialize instance
-    # Setup called during initialization for child sources to override
+    # Setup hook for source requiring customized setup
+    #
+    # @param args [Hash] initialization hash
     def setup(args={})
       debug 'No custom setup declared'
     end
 
-    # args:: Argument hash
-    # Connection method to be overridden in child sources
-    def connect(args={})
+    # Connection hook for sources requiring customized connect
+    #
+    # @param args [Hash] initialization hash
+    def connect
       debug 'No custom connect declared'
     end
 
-    # args:: number of messages to read
-    # Returns messages from source
+    # Receive messages from source
+    # @abstract
+    #
+    # @param n [Integer] number of messages
+    # @return [Object, Array<Object>] payload or array of payloads
     def receive(n=1)
-      raise NoMethodError.new('Abstract method not valid for runtime')
+      raise NotImplementedError.new('Abstract method not valid for runtime')
     end
 
-    # message:: Payload to transmit
-    # original_message:: Original `Carnivore::Message`
-    # args:: Custom arguments
-    # Transmit message on source
+    # Send payload to source
+    #
+    # @param message [Object] payload
+    # @param original_message [Carnviore::Message] original message if reply to extract optional metadata
+    # @param args [Hash] optional extra arguments
     def transmit(message, original_message=nil, args={})
-      raise NoMethodError.new('Abstract method not valid for runtime')
+      raise NotImplemented.new('Abstract method not valid for runtime')
     end
 
-    # message:: Carnivore::Message
     # Confirm receipt of the message on source
+    #
+    # @param message [Carnivore::Message]
     def confirm(message)
       debug 'No custom confirm declared'
     end
 
-    # callback_name:: Name of callback
-    # block_or_class:: Carnivore::Callback class or a block
     # Adds the given callback to the source for message processing
+    #
+    # @param callback_name [String, Symbol] name of callback
+    # @param block_or_class [Carnivore::Callback, Proc]
+    # @return [self]
     def add_callback(callback_name, block_or_class)
       name = "#{self.name}:#{callback_name}"
       if(block_or_class.is_a?(Class))
@@ -213,8 +255,10 @@ module Carnivore
       self
     end
 
-    # name:: Name of callback
     # Remove the named callback from the source
+    #
+    # @param name [String, Symbol]
+    # @return [self]
     def remove_callback(name)
       unless(@callbacks.include?(callback_name(name)))
         abort NameError.new("Failed to locate callback named: #{name}")
@@ -224,8 +268,10 @@ module Carnivore
       self
     end
 
-    # name:: Name of callback
     # Returns namespaced name (prefixed with source name and instance id)
+    #
+    # @param name [String, Symbol] name of callback
+    # @return [Carnivore::Callback, NilClass]
     def callback_name(name)
       unless(@callback_names[name])
         @callback_names[name] = [@name, self.object_id, name].join(':').to_sym
@@ -233,8 +279,10 @@ module Carnivore
       @callback_names[name]
     end
 
-    # msg:: New message received from source
-    # Returns formatted Carnivore::Message
+    # Create new Message from received payload
+    #
+    # @param msg [Object] received payload
+    # @return [Carnivore::Message]
     def format(msg)
       actor = Carnivore::Supervisor.supervisor[name]
       if(actor)
@@ -247,8 +295,12 @@ module Carnivore
       end
     end
 
-    # m:: Carnivore::Message
-    # Returns true if message is valid to be processed
+    # Validate message is allowed before processing. This is currently
+    # only used when the message registry is enabled to prevent
+    # duplicate message processing.
+    #
+    # @param m [Carnivore::Message]
+    # @return [TrueClass, FalseClass]
     def valid_message?(m)
       if(message_registry)
         if(message_registry.valid?(m))
@@ -262,8 +314,10 @@ module Carnivore
       end
     end
 
-    # args:: Arguments
-    # Start processing messages from source
+    # Process incoming messages from this source
+    #
+    # @param args [Object] list of arguments
+    # @return [TrueClass]
     def process(*args)
       begin
         while(run_process && !callbacks.empty?)
@@ -301,45 +355,63 @@ module Carnivore
       ensure
         @processing = false
       end
+      true
     end
 
+    # Receive messages from source
+    # @return [TrueClass]
     def receive_messages
       loop do
         message_remote.push receive
         signal(:messages_available)
       end
+      true
     end
 
-    # args:: unused
-    # Return queued message from internal loop
+    # Get received message on local loopback
+    #
+    # @param args [Object] argument list (unused)
+    # @return [Carnivore::Message, NilClass]
     def loop_receive(*args)
       message_loop.shift
     end
 
-    # message:: Message for delivery
-    # original_message:: unused
-    # args:: unused
     # Push message onto internal loop queue
+    #
+    # @param message [Carnivore::Message]
+    # @param original_message [Object] unused
+    # @param args [Hash] unused
+    # @return [TrueClass]
     def loop_transmit(message, original_message=nil, args={})
       message_loop.push message
       signal(:messages_available)
+      true
     end
 
-    # args:: transmit args
     # Send to local loop if processing otherwise use regular transmit
+    #
+    # @param args [Object] argument list
+    # @return [TrueClass]
     def _transmit(*args)
       if(loop_enabled? && processing)
         loop_transmit(*args)
       else
         custom_transmit(*args)
       end
+      true
     end
 
+    # Local message loopback is enabled. Custom sources should
+    # override this method to allow loopback delivery if desired
+    #
+    # @return [TrueClass, FalseClass]
     def loop_enabled?
       false
     end
 
     # Load and initialize the message registry
+    #
+    # @return [MessageRegistry] new registry
     def init_registry
       require 'carnivore/message_registry'
       @message_registry = MessageRegistry.new
