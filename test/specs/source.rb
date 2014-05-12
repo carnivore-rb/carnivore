@@ -11,7 +11,7 @@ describe 'Carnivore::Source' do
     end
 
     it 'should store argument hash in `source_hash` attribute' do
-      @src_ctn.source_hash.must_equal :arg1 => true, :callbacks => {}
+      @src_ctn.source_hash.must_equal Smash.new(:arg1 => true, :callbacks => {})
     end
 
     describe 'callback additions' do
@@ -21,8 +21,8 @@ describe 'Carnivore::Source' do
       end
 
       it 'should store callback by name in `source_hash` under `:callbacks`' do
-        @src_ctn.source_hash.keys.must_include :callbacks
-        @src_ctn.source_hash[:callbacks].keys.must_include :hi
+        @src_ctn.source_hash[:callbacks].wont_be_nil
+        @src_ctn.source_hash[:callbacks][:hi].call.must_equal 'hi'
         @src_ctn.source_hash[:callbacks].values.must_include @block
       end
     end
@@ -68,7 +68,7 @@ describe 'Carnivore::Source' do
     end
 
     it 'should do nothing when process is called and no callbacks are registered' do
-      Carnivore::Source.new(:auto_process => false).process.must_be_nil
+      Carnivore::Source.new(:auto_process => false).process.must_equal true
     end
 
   end

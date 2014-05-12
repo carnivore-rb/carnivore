@@ -19,6 +19,10 @@ describe 'Carnivore::Message' do
 
   it 'provides `confirm!` confirmation helper to Source' do
     source = MiniTest::Mock.new
+    # Mock items for hashie inspection on hash dup
+    2.times do
+      source.expect(:is_a?, false, [Object])
+    end
     message = Carnivore::Message.new(:source => source, :message => 'hi')
     source.expect(:confirm, true, [message])
     message.confirm!
