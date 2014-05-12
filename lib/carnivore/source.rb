@@ -120,7 +120,7 @@ module Carnivore
     attr_reader :message_loop
     # @return [Queue] remote message queue
     attr_reader :message_remote
-    # @retrurn [TrueClass, FalseClass] currently processing a message
+    # @return [TrueClass, FalseClass] currently processing a message
     attr_reader :processing
 
     # Create new Source
