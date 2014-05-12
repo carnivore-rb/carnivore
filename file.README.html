@@ -1,0 +1,186 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=US-ASCII" />
+<title>
+  File: README
+  
+    &mdash; Documentation by YARD 0.8.7.4
+  
+</title>
+
+  <link rel="stylesheet" href="css/style.css" type="text/css" charset="utf-8" />
+
+  <link rel="stylesheet" href="css/common.css" type="text/css" charset="utf-8" />
+
+<script type="text/javascript" charset="utf-8">
+  hasFrames = window.top.frames.main ? true : false;
+  relpath = '';
+  framesUrl = "frames.html#!file.README.html";
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div id="header">
+      <div id="menu">
+  
+    <a href="_index.html">Index</a> &raquo; 
+    <span class="title">File: README</span>
+  
+
+  <div class="noframes"><span class="title">(</span><a href="." target="_top">no frames</a><span class="title">)</span></div>
+</div>
+
+      <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="class_list.html">
+      Class List
+    </a>
+  
+    <a class="full_list_link" id="method_list_link"
+        href="method_list.html">
+      Method List
+    </a>
+  
+    <a class="full_list_link" id="file_list_link"
+        href="file_list.html">
+      File List
+    </a>
+  
+</div>
+      <div class="clear"></div>
+    </div>
+
+    <iframe id="search_frame"></iframe>
+
+    <div id="content"><div id='filecontents'><h1>Carnivore</h1>
+
+<p>Eat messages, rule the world.</p>
+
+<h2>Purpose</h2>
+
+<p>Slim library to consume messages. Sources are defined
+and callbacks are registered to defined sources. Sources
+feed messages to callback workers asynchronously and
+stuff gets done. Super simple!</p>
+
+<h2>Usage</h2>
+
+<ol>
+<li>Build a source</li>
+<li>Add callbacks</li>
+<li>Profit!</li>
+</ol>
+
+<pre class="code ruby"><code class="ruby"><span class='const'>Carnivore</span><span class='period'>.</span><span class='id identifier rubyid_configure'>configure</span> <span class='kw'>do</span>
+  <span class='id identifier rubyid_src'>src</span> <span class='op'>=</span> <span class='const'>Source</span><span class='period'>.</span><span class='id identifier rubyid_build'>build</span><span class='lparen'>(</span><span class='symbol'>:type</span> <span class='op'>=&gt;</span> <span class='symbol'>:test</span><span class='comma'>,</span> <span class='symbol'>:args</span> <span class='op'>=&gt;</span> <span class='lbrace'>{</span><span class='rbrace'>}</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_src'>src</span><span class='period'>.</span><span class='id identifier rubyid_add_callback'>add_callback</span><span class='lparen'>(</span><span class='symbol'>:print_message</span><span class='rparen'>)</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_msg'>msg</span><span class='op'>|</span>
+    <span class='id identifier rubyid_puts'>puts</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Received message: </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_msg'>msg</span><span class='rbrace'>}</span><span class='tstring_end'>&quot;</span></span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span><span class='period'>.</span><span class='id identifier rubyid_start!'>start!</span>
+</code></pre>
+
+<h3>Advanced Usage</h3>
+
+<p>Under the hood, callbacks are built into <code>Carnivore::Callback</code>
+instances. This class can be subclassed and provided directly
+instead of a simple block. This has the added bonus of being
+able to define the number of worker instances to be created
+for the callback (blocks only get 1):</p>
+
+<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_require'>require</span> <span class='tstring'><span class='tstring_beg'>'</span><span class='tstring_content'>carnivore</span><span class='tstring_end'>'</span></span>
+
+<span class='kw'>class</span> <span class='const'>CustomCallback</span> <span class='op'>&lt;</span> <span class='const'>Carnivore</span><span class='op'>::</span><span class='const'>Callback</span>
+
+  <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_workers'>workers</span> <span class='op'>=</span> <span class='int'>5</span>
+
+  <span class='kw'>def</span> <span class='id identifier rubyid_setup'>setup</span>
+    <span class='id identifier rubyid_info'>info</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Custom callback setup called!</span><span class='tstring_end'>&quot;</span></span>
+  <span class='kw'>end</span>
+
+  <span class='kw'>def</span> <span class='id identifier rubyid_execute'>execute</span><span class='lparen'>(</span><span class='id identifier rubyid_message'>message</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_info'>info</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>GOT MESSAGE: </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_message'>message</span><span class='lbracket'>[</span><span class='symbol'>:message</span><span class='rbracket'>]</span><span class='rbrace'>}</span><span class='tstring_content'> - source: </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_message'>message</span><span class='lbracket'>[</span><span class='symbol'>:source</span><span class='rbracket'>]</span><span class='rbrace'>}</span><span class='tstring_content'> - instance: </span><span class='embexpr_beg'>#{</span><span class='kw'>self</span><span class='rbrace'>}</span><span class='tstring_end'>&quot;</span></span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span>
+
+<span class='const'>Carnivore</span><span class='period'>.</span><span class='id identifier rubyid_configure'>configure</span> <span class='kw'>do</span>
+  <span class='id identifier rubyid_s'>s</span> <span class='op'>=</span> <span class='const'>Carnivore</span><span class='op'>::</span><span class='const'>Source</span><span class='period'>.</span><span class='id identifier rubyid_build'>build</span><span class='lparen'>(</span><span class='symbol'>:type</span> <span class='op'>=&gt;</span> <span class='symbol'>:test</span><span class='comma'>,</span> <span class='symbol'>:args</span> <span class='op'>=&gt;</span> <span class='lbrace'>{</span><span class='rbrace'>}</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_s'>s</span><span class='period'>.</span><span class='id identifier rubyid_add_callback'>add_callback</span><span class='lparen'>(</span><span class='symbol'>:printer</span><span class='comma'>,</span> <span class='const'>CustomCallback</span><span class='rparen'>)</span>
+<span class='kw'>end</span><span class='period'>.</span><span class='id identifier rubyid_start!'>start!</span>
+</code></pre>
+
+<h3>Block execution</h3>
+
+<p>It is important to note that when providing blocks they will
+lose all reference to the scope in which they are defined. This
+is due to how <code>Callback</code> is implemented and is by design. Simply
+ensure that blocks are fully autonomous and everything will be
+great.</p>
+
+<h4>Example (bad):</h4>
+
+<pre class="code ruby"><code class="ruby"><span class='const'>Carnivore</span><span class='period'>.</span><span class='id identifier rubyid_configure'>configure</span> <span class='kw'>do</span>
+  <span class='id identifier rubyid_my_inst'>my_inst</span> <span class='op'>=</span> <span class='const'>AwesomeSauce</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span>
+  <span class='id identifier rubyid_src'>src</span> <span class='op'>=</span> <span class='const'>Source</span><span class='period'>.</span><span class='id identifier rubyid_build'>build</span><span class='lparen'>(</span><span class='symbol'>:type</span> <span class='op'>=&gt;</span> <span class='symbol'>:test</span><span class='comma'>,</span> <span class='symbol'>:args</span> <span class='op'>=&gt;</span> <span class='lbrace'>{</span><span class='rbrace'>}</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_src'>src</span><span class='period'>.</span><span class='id identifier rubyid_add_callback'>add_callback</span><span class='lparen'>(</span><span class='symbol'>:print_message</span><span class='rparen'>)</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_msg'>msg</span><span class='op'>|</span>
+    <span class='id identifier rubyid_my_inst'>my_inst</span><span class='period'>.</span><span class='id identifier rubyid_be_awesome!'>be_awesome!</span>
+    <span class='id identifier rubyid_puts'>puts</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Received message: </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_msg'>msg</span><span class='rbrace'>}</span><span class='tstring_end'>&quot;</span></span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span><span class='period'>.</span><span class='id identifier rubyid_start!'>start!</span>
+</code></pre>
+
+<h4>Example (good):</h4>
+
+<pre class="code ruby"><code class="ruby"><span class='const'>Carnivore</span><span class='period'>.</span><span class='id identifier rubyid_configure'>configure</span> <span class='kw'>do</span>
+  <span class='id identifier rubyid_src'>src</span> <span class='op'>=</span> <span class='const'>Source</span><span class='period'>.</span><span class='id identifier rubyid_build'>build</span><span class='lparen'>(</span><span class='symbol'>:type</span> <span class='op'>=&gt;</span> <span class='symbol'>:test</span><span class='comma'>,</span> <span class='symbol'>:args</span> <span class='op'>=&gt;</span> <span class='lbrace'>{</span><span class='rbrace'>}</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_src'>src</span><span class='period'>.</span><span class='id identifier rubyid_add_callback'>add_callback</span><span class='lparen'>(</span><span class='symbol'>:print_message</span><span class='rparen'>)</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_msg'>msg</span><span class='op'>|</span>
+    <span class='id identifier rubyid_my_inst'>my_inst</span> <span class='op'>=</span> <span class='const'>AwesomeSauce</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span>
+    <span class='id identifier rubyid_my_inst'>my_inst</span><span class='period'>.</span><span class='id identifier rubyid_be_awesome!'>be_awesome!</span>
+    <span class='id identifier rubyid_puts'>puts</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Received message: </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_msg'>msg</span><span class='rbrace'>}</span><span class='tstring_end'>&quot;</span></span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span><span class='period'>.</span><span class='id identifier rubyid_start!'>start!</span>
+</code></pre>
+
+<p>So, does that mean a new <code>AwesomeSauce</code> instance will be
+created on every message processed? Yes, yes it does. However,
+the block at runtime is no longer really a block, so lets
+keep that instance around so it can be reused:</p>
+
+<h4>Example (more gooder):</h4>
+
+<pre class="code ruby"><code class="ruby"><span class='const'>Carnivore</span><span class='period'>.</span><span class='id identifier rubyid_configure'>configure</span> <span class='kw'>do</span>
+  <span class='id identifier rubyid_src'>src</span> <span class='op'>=</span> <span class='const'>Source</span><span class='period'>.</span><span class='id identifier rubyid_build'>build</span><span class='lparen'>(</span><span class='symbol'>:type</span> <span class='op'>=&gt;</span> <span class='symbol'>:test</span><span class='comma'>,</span> <span class='symbol'>:args</span> <span class='op'>=&gt;</span> <span class='lbrace'>{</span><span class='rbrace'>}</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_src'>src</span><span class='period'>.</span><span class='id identifier rubyid_add_callback'>add_callback</span><span class='lparen'>(</span><span class='symbol'>:print_message</span><span class='rparen'>)</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_msg'>msg</span><span class='op'>|</span>
+    <span class='kw'>unless</span><span class='lparen'>(</span><span class='ivar'>@my_inst</span><span class='rparen'>)</span>
+      <span class='ivar'>@my_inst</span> <span class='op'>=</span> <span class='const'>AwesomeSauce</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span>
+    <span class='kw'>end</span>
+    <span class='ivar'>@my_inst</span><span class='period'>.</span><span class='id identifier rubyid_be_awesome!'>be_awesome!</span>
+    <span class='id identifier rubyid_puts'>puts</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Received message: </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_msg'>msg</span><span class='rbrace'>}</span><span class='tstring_end'>&quot;</span></span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span><span class='period'>.</span><span class='id identifier rubyid_start!'>start!</span>
+</code></pre>
+
+<h2>Info</h2>
+
+<ul>
+<li>Repository: <a href="https://github.com/carnivore-rb/carnivore">https://github.com/carnivore-rb/carnivore</a></li>
+<li>IRC: Freenode @ #carnivore</li>
+</ul>
+</div></div>
+
+    <div id="footer">
+  Generated on Mon May 12 15:52:16 2014 by
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.8.7.4 (ruby-1.9.3).
+</div>
+
+  </body>
+</html>
