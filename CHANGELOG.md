@@ -1,3 +1,10 @@
+# v0.2.2
+* Local loopback is optional and disabled by default
+* Include Smash utility for Hash management
+* Provide originating source to callback instances on initialization
+* Add spec helpers
+* Clean up custom supervisor implementation
+
 # v0.2.0
 * Remove `fog` from dependency list
 * Add common spec helper for testing
