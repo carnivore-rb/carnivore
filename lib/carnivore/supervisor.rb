@@ -58,6 +58,13 @@ module Carnivore
         true
       end
 
+      # Check if default supervisor is alive
+      #
+      # @return [TrueClass, FalseClass]
+      def alive?
+        supervisor && supervisor.alive?
+      end
+
     end
 
     # @return [Celluloid::Registry]
