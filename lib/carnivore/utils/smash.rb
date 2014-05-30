@@ -81,7 +81,11 @@ class Hash
   #
   # @return [Smash]
   def to_smash
-    ::Smash.new.replace(self)
+    ::Smash.new.tap do |smash|
+      self.each do |k,v|
+        smash[k] = v.is_a?(::Hash) ? v.to_smash : v
+      end
+    end
   end
   alias_method :hulk_smash, :to_smash
 
