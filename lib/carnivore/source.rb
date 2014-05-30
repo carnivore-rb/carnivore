@@ -133,6 +133,7 @@ module Carnivore
     # @option args [TrueClass, FalseClass] :prevent_duplicates setup and use message registry
     # @option args [Array<Callback>] :callbacks callbacks to register on this source
     def initialize(args={})
+      @name = args[:name]
       @args = Smash.new(args)
       @callbacks = []
       @message_loop = Queue.new
@@ -162,7 +163,10 @@ module Carnivore
       connect
       if(auto_process && !callbacks.empty?)
         async.process
+      else
+        warn 'Processing is disabled'
       end
+      info 'Source initialization is complete'
     rescue => e
       debug "Failed to initialize: #{self} - #{e.class}: #{e}\n#{e.backtrace.join("\n")}"
       raise
