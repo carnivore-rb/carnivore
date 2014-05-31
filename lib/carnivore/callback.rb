@@ -1,4 +1,5 @@
 require 'carnivore'
+require 'celluloid/autostart'
 
 module Carnivore
   # Payload modifier
