@@ -26,6 +26,14 @@ module Carnivore
         end
       end
 
+      # Log exception
+      #
+      # @param e [Exception]
+      def exception_log(e)
+        error "#{e.class}: #{e}"
+        debug "#{e.class}: #{e}\n#{e.backtrace.join("\n")}"
+      end
+
     end
 
   end
