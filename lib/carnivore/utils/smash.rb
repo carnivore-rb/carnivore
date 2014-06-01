@@ -6,6 +6,7 @@ module Carnivore
     # Customized Hash
     class Smash < Hash
       include Hashie::Extensions::IndifferentAccess
+      include Hashie::Extensions::MergeInitializer
       include Hashie::Extensions::DeepMerge
       include Hashie::Extensions::Coercion
 
@@ -21,8 +22,13 @@ module Carnivore
         end
         super *args
         if(base)
-          self.replace(base)
+          self.replace(base.to_smash)
         end
+      end
+
+      def merge!(hash)
+        hash = hash.to_smash unless hash.is_a?(::Smash)
+        super(hash)
       end
 
       # Get value at given path
@@ -81,10 +87,14 @@ class Hash
   #
   # @return [Smash]
   def to_smash
-    ::Smash.new.tap do |smash|
-      self.each do |k,v|
-        smash[k] = v.is_a?(::Hash) ? v.to_smash : v
+    unless(self.is_a?(::Smash))
+      ::Smash.new.tap do |smash|
+        self.each do |k,v|
+          smash[k.is_a?(Symbol) ? k.to_s : k] = v.is_a?(::Hash) && !v.is_a?(::Smash) ? v.to_smash : v
+        end
       end
+    else
+      self
     end
   end
   alias_method :hulk_smash, :to_smash
