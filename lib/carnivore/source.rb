@@ -324,9 +324,9 @@ module Carnivore
     # @return [TrueClass]
     def process(*args)
       begin
+        async.receive_messages
+        @processing = true
         while(run_process && !callbacks.empty?)
-          @processing = true
-          async.receive_messages
           if(message_loop.empty? && message_remote.empty?)
             wait(:messages_available)
           end
