@@ -130,6 +130,7 @@ module Carnivore
     # @option args [TrueClass, FalseClass] :auto_process start processing on initialization
     # @option args [TrueClass, FalseClass] :auto_confirm confirm messages automatically on receive
     # @option args [Proc] :orphan_callback execute block when no callbacks are valid for message
+    # @option args [Proc] :multiple_callback execute block when multiple callbacks are valid and multiple support is disabled
     # @option args [TrueClass, FalseClass] :prevent_duplicates setup and use message registry
     # @option args [Array<Callback>] :callbacks callbacks to register on this source
     def initialize(args={})
@@ -143,11 +144,13 @@ module Carnivore
       @run_process = true
       @auto_confirm = !!args[:auto_confirm]
       @callback_supervisor = Carnivore::Supervisor.create!.last
-      if(args[:orphan_callback])
-        unless(args[:orphan_callback].is_a?(Proc))
-          raise TypeError.new("Expected `Proc` type for `orphan_callback` but received `#{args[:orphan_callback].class}`")
+      [:orphan_callback, :multiple_callback].each do |key|
+        if(args[key])
+          unless(args[key].is_a?(Proc))
+            raise TypeError.new("Expected `Proc` type for `#{key}` but received `#{args[key].class}`")
+          end
+          define_singleton_method(key, &args[key])
         end
-        define_singleton_method(:orphan_callback, &args[:orphan_callback])
       end
       if(args[:prevent_duplicates])
         init_registry
@@ -339,20 +342,24 @@ module Carnivore
             end
           end.compact
           msgs.each do |msg|
-            if(respond_to?(:orphan_callback))
+            if(multipe_callbacks? || respond_to?(:orphan_callback))
               valid_callbacks = callbacks.find_all do |name|
                 callback_supervisor[callback_name(name)].valid?(msg)
               end
             else
               valid_callbacks = callbacks
             end
-            valid_callbacks.each do |name|
-              debug "Dispatching message<#{msg[:message].object_id}> to callback<#{name} (#{callback_name(name)})>"
-              callback_supervisor[callback_name(name)].async.call(msg)
-            end
             if(valid_callbacks.empty?)
               warn "Received message was not processed through any callbacks on this source: #{msg}"
               orphan_callback(current_actor, msg) if respond_to?(:orphan_callback)
+            elsif(valid_callbacks.size > 1 && !multiple_callbacks?)
+              error "Received message is valid for multiple callbacks but multiple callbacks are disabled: #{msg}"
+              multiple_callback(current_actor, msg) if respond_to?(:multiple_callback)
+            else
+              valid_callbacks.each do |name|
+                debug "Dispatching message<#{msg[:message].object_id}> to callback<#{name} (#{callback_name(name)})>"
+                callback_supervisor[callback_name(name)].async.call(msg)
+              end
             end
           end
         end
@@ -411,6 +418,15 @@ module Carnivore
     # @return [TrueClass, FalseClass]
     def loop_enabled?
       false
+    end
+
+    # Allow sending payload to multiple matching callbacks. Custom
+    # sources should override this method to disable multiple
+    # callback matches if desired.
+    #
+    # @return [TrueClass, FalseClass]
+    def multiple_callbacks?
+      true
     end
 
     # Load and initialize the message registry
