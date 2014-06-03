@@ -122,6 +122,8 @@ module Carnivore
     attr_reader :message_remote
     # @return [TrueClass, FalseClass] currently processing a message
     attr_reader :processing
+    # @return [TrueClass, FalseClass] allow multple callback matches
+    attr_reader :allow_multple_matches
 
     # Create new Source
     #
@@ -132,6 +134,7 @@ module Carnivore
     # @option args [Proc] :orphan_callback execute block when no callbacks are valid for message
     # @option args [Proc] :multiple_callback execute block when multiple callbacks are valid and multiple support is disabled
     # @option args [TrueClass, FalseClass] :prevent_duplicates setup and use message registry
+    # @option args [TrueClass, FalseClass] :allow_multiple_matches allow multiple callback matches (defaults true)
     # @option args [Array<Callback>] :callbacks callbacks to register on this source
     def initialize(args={})
       @name = args[:name]
@@ -144,6 +147,7 @@ module Carnivore
       @run_process = true
       @auto_confirm = !!args[:auto_confirm]
       @callback_supervisor = Carnivore::Supervisor.create!.last
+      @allow_multiple_matches = !!args.fetch(:allow_multple_matches, true)
       [:orphan_callback, :multiple_callback].each do |key|
         if(args[key])
           unless(args[key].is_a?(Proc))
@@ -342,7 +346,7 @@ module Carnivore
             end
           end.compact
           msgs.each do |msg|
-            if(multipe_callbacks? || respond_to?(:orphan_callback))
+            if(multiple_callbacks? || respond_to?(:orphan_callback))
               valid_callbacks = callbacks.find_all do |name|
                 callback_supervisor[callback_name(name)].valid?(msg)
               end
@@ -426,7 +430,7 @@ module Carnivore
     #
     # @return [TrueClass, FalseClass]
     def multiple_callbacks?
-      true
+      allow_multiple_matches
     end
 
     # Load and initialize the message registry
