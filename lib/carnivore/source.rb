@@ -122,8 +122,10 @@ module Carnivore
     attr_reader :message_remote
     # @return [TrueClass, FalseClass] currently processing a message
     attr_reader :processing
-    # @return [TrueClass, FalseClass] allow multple callback matches
-    attr_reader :allow_multple_matches
+    # @return [TrueClass, FalseClass] allow multiple callback matches
+    attr_reader :allow_multiple_matches
+    # @return [Hash] original options hash
+    attr_reader :arguments
 
     # Create new Source
     #
@@ -137,6 +139,7 @@ module Carnivore
     # @option args [TrueClass, FalseClass] :allow_multiple_matches allow multiple callback matches (defaults true)
     # @option args [Array<Callback>] :callbacks callbacks to register on this source
     def initialize(args={})
+      @arguments = args.dup
       @name = args[:name]
       @args = Smash.new(args)
       @callbacks = []
@@ -147,7 +150,7 @@ module Carnivore
       @run_process = true
       @auto_confirm = !!args[:auto_confirm]
       @callback_supervisor = Carnivore::Supervisor.create!.last
-      @allow_multiple_matches = !!args.fetch(:allow_multple_matches, true)
+      @allow_multiple_matches = !!args.fetch(:allow_multiple_matches, true)
       [:orphan_callback, :multiple_callback].each do |key|
         if(args[key])
           unless(args[key].is_a?(Proc))
