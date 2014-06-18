@@ -1,3 +1,9 @@
+# v0.2.4
+* Move receive starts out of processing loop
+* Extract source name from arguments on setup
+* Deep force smash type on conversion
+* Add optional disablement of multiple callback matches
+
 # v0.2.2
 * Local loopback is optional and disabled by default
 * Include Smash utility for Hash management
