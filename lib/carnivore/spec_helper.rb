@@ -23,7 +23,11 @@ end
 # @param name [String, Symbol] fetch wait time from environment variable
 # @return [Numeric] seconds sleeping
 def source_wait(name='wait')
-  total = ENV.fetch("CARNIVORE_SOURCE_#{name.to_s.upcase}", 1.0).to_f
+  if(name.is_a?(String) || name.is_a?(Symbol))
+    total = ENV.fetch("CARNIVORE_SOURCE_#{name.to_s.upcase}", 1.0).to_f
+  else
+    total = name.to_f
+  end
   if(block_given?)
     elapsed = 0.0
     until(yield || elapsed >= total)
