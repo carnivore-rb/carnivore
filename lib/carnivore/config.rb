@@ -40,7 +40,23 @@ module Carnivore
         if(path_or_hash.is_a?(Hash))
           conf = path_or_hash
         else
-          if(File.exists?(path_or_hash.to_s))
+          if(File.directory?(path_or_hash.to_s))
+            files = Dir.new(path_or_hash.to_s).find_all do |f|
+              File.extname(f) == '.json'
+            end.sort
+            conf = files.inject(Smash.new) do |memo, path|
+              memo.deep_merge!(
+                MultiJson.load(
+                  File.read(
+                    File.join(
+                      path_or_hash.to_s, path
+                    )
+                  )
+                ).to_smash
+              )
+            end
+            self.config_path = path_or_hash
+          elsif(File.exists?(path_or_hash.to_s))
             conf = JSON.load(File.read(path_or_hash))
             self.config_path = path_or_hash
           else
