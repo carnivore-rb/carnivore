@@ -127,6 +127,9 @@ module Carnivore
     # @return [Hash] original options hash
     attr_reader :arguments
 
+    # @note this is just a compat method for older sources
+    alias_method :args, :arguments
+
     # Create new Source
     #
     # @param args [Hash]
