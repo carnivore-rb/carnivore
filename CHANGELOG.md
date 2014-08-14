@@ -1,3 +1,7 @@
+# v0.2.6
+* Provide arguments method alias for sources (#args)
+* Allow configuration via directory and file merge
+
 # v0.2.4
 * Move receive starts out of processing loop
 * Extract source name from arguments on setup
