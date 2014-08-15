@@ -1,5 +1,6 @@
-# Load celluloid on demand
+# Load supporters on demand
 autoload :Celluloid, 'celluloid'
+autoload :MultiJson, 'multi_json'
 
 require 'carnivore/runner'
 require 'carnivore/version'

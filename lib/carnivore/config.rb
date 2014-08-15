@@ -1,4 +1,3 @@
-require 'json'
 require 'mixlib/config'
 require 'carnivore'
 
@@ -57,7 +56,7 @@ module Carnivore
             end
             self.config_path = path_or_hash
           elsif(File.exists?(path_or_hash.to_s))
-            conf = JSON.load(File.read(path_or_hash))
+            conf = MultiJson.load(File.read(path_or_hash))
             self.config_path = path_or_hash
           else
             raise "Failed to load configuration file: #{path_or_hash}"
