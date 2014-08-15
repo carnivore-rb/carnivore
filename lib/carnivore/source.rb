@@ -1,5 +1,4 @@
 require 'digest/sha2'
-require 'celluloid'
 require 'carnivore'
 
 module Carnivore

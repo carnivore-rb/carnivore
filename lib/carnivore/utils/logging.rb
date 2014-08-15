@@ -1,4 +1,4 @@
-require 'celluloid'
+require 'carnivore'
 
 module Carnivore
   module Utils

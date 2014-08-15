@@ -1,3 +1,6 @@
+# Load celluloid on demand
+autoload :Celluloid, 'celluloid'
+
 require 'carnivore/runner'
 require 'carnivore/version'
 

@@ -1,5 +1,4 @@
 require 'carnivore'
-require 'celluloid/logger'
 
 module Carnivore
   # Module used for building isolation
