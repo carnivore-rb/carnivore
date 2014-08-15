@@ -1,3 +1,6 @@
+# v0.2.8
+* Make supporting library auto loaded as needed
+
 # v0.2.6
 * Provide arguments method alias for sources (#args)
 * Allow configuration via directory and file merge
