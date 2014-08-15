@@ -1,3 +1,6 @@
+# v0.2.10
+* Remove explicit JSON usage
+
 # v0.2.8
 * Make supporting library auto loaded as needed
 
