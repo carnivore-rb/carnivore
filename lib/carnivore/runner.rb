@@ -19,13 +19,24 @@ module Carnivore
       begin
         require 'carnivore/supervisor'
         supervisor = Carnivore::Supervisor.build!
+        Celluloid::Logger.info 'Initializing all registered sources.'
+        [].tap do |register|
+          Source.sources.each do |source|
+            register << Thread.new do
+              source.klass.reset_comms!
+              supervisor.supervise_as(
+                source.source_hash[:name],
+                source.klass,
+                source.source_hash.dup.merge(:auto_process => false)
+              )
+            end
+          end
+        end.map(&:join)
+        Celluloid::Logger.info 'Source initializations complete. Enabling message processing.'
         Source.sources.each do |source|
-          source.klass.reset_comms!
-          supervisor.supervise_as(
-            source.source_hash[:name],
-            source.klass,
-            source.source_hash.dup
-          )
+          if(source.source_hash.fetch(:auto_process, true))
+            supervisor[source.source_hash[:name]].async.process
+          end
         end
         loop do
           # We do a sleep loop so we can periodically check on the
