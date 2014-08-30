@@ -27,7 +27,7 @@ module Carnivore
               supervisor.supervise_as(
                 source.source_hash[:name],
                 source.klass,
-                source.source_hash.dup.merge(:auto_process => false)
+                source.source_hash.dup
               )
             end
           end
@@ -35,7 +35,7 @@ module Carnivore
         Celluloid::Logger.info 'Source initializations complete. Enabling message processing.'
         Source.sources.each do |source|
           if(source.source_hash.fetch(:auto_process, true))
-            supervisor[source.source_hash[:name]].async.process
+            supervisor[source.source_hash[:name]].start!
           end
         end
         loop do

@@ -173,15 +173,29 @@ module Carnivore
       end
       setup(args)
       connect
-      if(auto_process && !callbacks.empty?)
-        async.process
-      else
-        warn 'Processing is disabled'
-      end
       info 'Source initialization is complete'
     rescue => e
       debug "Failed to initialize: #{self} - #{e.class}: #{e}\n#{e.backtrace.join("\n")}"
       raise
+    end
+
+    # Start source if auto_process is enabled
+    #
+    # @return [TrueClass, FalseClass]
+    def start!
+      if(auto_process?)
+        info 'Message processing started via auto start'
+        async.process
+        true
+      else
+        warn 'Message processing is disabled via auto start'
+        false
+      end
+    end
+
+    # @return [TrueClass, FalseClass] auto processing enabled
+    def auto_process?
+      auto_process && !callbacks.empty?
     end
 
     # Ensure we cleanup our internal supervisor before bailing out
