@@ -75,6 +75,13 @@ module Carnivore
         value
       end
 
+      # Convert to Hash
+      #
+      # @return [Hash]
+      def to_hash
+        self.to_type_converter(::Hash, :to_hash)
+      end
+
     end
   end
 
@@ -87,13 +94,42 @@ class Hash
   #
   # @return [Smash]
   def to_smash
-    ::Smash.new.tap do |smash|
+    self.to_type_converter(::Smash, :to_smash)
+  end
+  alias_method :hulk_smash, :to_smash
+
+  protected
+
+  # Convert to type
+  #
+  # @param type [Class] hash type
+  # @param convert_call [Symbol] builtin hash convert
+  # @return [Smash]
+  def to_type_converter(type, convert_call)
+    type.new.tap do |smash|
       self.each do |k,v|
-        smash[k.is_a?(Symbol) ? k.to_s : k] = v.is_a?(::Hash) && !v.is_a?(::Smash) ? v.to_smash : v
+        smash[k.is_a?(Symbol) ? k.to_s : k] = smash_conversion(v, convert_call)
       end
     end
   end
-  alias_method :hulk_smash, :to_smash
+
+  # Convert object to smash if applicable
+  #
+  # @param obj [Object]
+  # @param convert_call [Symbol] builtin hash convert
+  # @return [Smash, Object]
+  def smash_conversion(obj, convert_call)
+    case obj
+    when Hash
+      obj.send(convert_call)
+    when Array
+      obj.map do |i|
+        smash_conversion(i, convert_call)
+      end
+    else
+      obj
+    end
+  end
 
 end
 
