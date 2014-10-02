@@ -8,6 +8,7 @@ module Carnivore
     autoload :Logging, 'carnivore/utils/logging'
     autoload :MessageRegistry, 'carnivore/utils/message_registry'
     autoload :Smash, 'carnivore/utils/smash'
+    autoload :Failure, 'carnivore/utils/failure'
 
     extend Params
     extend Logging

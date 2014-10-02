@@ -98,6 +98,8 @@ module Carnivore
     include Celluloid
     include Utils::Logging
     # @!parse include Carnivore::Utils::Logging
+    include Utils::Failure
+    # @!parse include Carnivore::Utils::Failure
 
     finalizer :teardown_cleanup
 
@@ -171,8 +173,12 @@ module Carnivore
           add_callback(name, block)
         end
       end
-      setup(args)
-      connect
+      execute_and_retry_forever(:setup) do
+        setup(args)
+      end
+      execute_and_retry_forever(:connect) do
+        connect
+      end
       info 'Source initialization is complete'
     rescue => e
       debug "Failed to initialize: #{self} - #{e.class}: #{e}\n#{e.backtrace.join("\n")}"

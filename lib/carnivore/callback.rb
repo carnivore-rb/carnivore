@@ -12,6 +12,8 @@ module Carnivore
     include Celluloid
     include Carnivore::Utils::Logging
     # @!parse include Carnivore::Utils::Logging
+    include Carnivore::Utils::Failure
+    # @!parse include Carnivore::Utils::Failure
 
     # @return [String, Symbol] name of callback
     attr_reader :name
@@ -30,7 +32,9 @@ module Carnivore
         raise ArgumentError.new 'Block is required for dynamic callbacks!'
       end
       define_singleton_method(:execute, &block) if block
-      setup
+      execute_and_retry_forever(:setup) do
+        setup
+      end
     end
 
     # Used by custom callback classes for setup
