@@ -23,6 +23,8 @@ describe 'Carnivore::Message' do
     3.times do
       source.expect(:is_a?, false, [Object])
     end
+    source.expect(:class, Carnivore::Source)
+    source.expect(:nil?, false)
     message = Carnivore::Message.new(:source => source, :message => 'hi')
     source.expect(:confirm, true, [message])
     message.confirm!
