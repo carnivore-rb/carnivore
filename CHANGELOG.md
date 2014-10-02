@@ -1,3 +1,9 @@
+# v0.2.12
+* Prevent source configuration output at INFO level on build
+* Keep all sources paused until all sources are built
+* Add helper for performing hash conversions
+* Support deep hash conversions (process through enumerables)
+
 # v0.2.10
 * Remove explicit JSON usage
 
