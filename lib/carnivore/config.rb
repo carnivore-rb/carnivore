@@ -18,7 +18,7 @@ module Carnivore
         unless(v.nil?)
           @hash_symbolizer = !!v
         end
-        @hash_symbolizer.nil? ? false : @hash_symbolizer
+        @hash_symbolizer.nil? ? true : @hash_symbolizer
       end
 
       # Merge provided args into configuration
