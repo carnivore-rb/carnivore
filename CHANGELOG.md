@@ -1,3 +1,6 @@
+# v0.2.14
+* Always return `Smash` types when config value is `Hash`
+
 # v0.2.12
 * Prevent source configuration output at INFO level on build
 * Keep all sources paused until all sources are built
