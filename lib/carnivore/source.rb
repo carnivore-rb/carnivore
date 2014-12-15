@@ -257,6 +257,15 @@ module Carnivore
       raise NotImplemented.new('Abstract method not valid for runtime')
     end
 
+    # Touch message to reset timeout
+    #
+    # @param message [Carnivore::Message]
+    # @return [TrueClass, FalseClass]
+    def touch(message)
+      warn 'Source#touch was not implemented for this source!'
+      true
+    end
+
     # Confirm receipt of the message on source
     #
     # @param message [Carnivore::Message]
