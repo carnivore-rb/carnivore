@@ -1,3 +1,7 @@
+# v0.2.16
+* Log incoming messages at info level
+* Add Source#touch method
+
 # v0.2.14
 * Always return `Smash` types when config value is `Hash`
 
