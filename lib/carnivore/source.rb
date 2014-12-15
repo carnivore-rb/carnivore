@@ -444,14 +444,19 @@ module Carnivore
     # Send to local loop if processing otherwise use regular transmit
     #
     # @param args [Object] argument list
-    # @return [TrueClass]
+    # @return [TrueClass, FalseClass]
     def _transmit(*args)
-      if(loop_enabled? && processing)
-        loop_transmit(*args)
-      else
-        custom_transmit(*args)
+      begin
+        if(loop_enabled? && processing)
+          loop_transmit(*args)
+        else
+          custom_transmit(*args)
+        end
+        true
+      rescue EncodingError => e
+        error "Transmission failed due to encoding error! Error: #{e.class} - #{e} [(#{args.map(&:to_s).join(')(')})]"
+        false
       end
-      true
     end
 
     # Local message loopback is enabled. Custom sources should

@@ -1,6 +1,7 @@
 # v0.2.16
 * Log incoming messages at info level
 * Add Source#touch method
+* Rescue and log encoding errors on transmission (prevent fatal teardown)
 
 # v0.2.14
 * Always return `Smash` types when config value is `Hash`
