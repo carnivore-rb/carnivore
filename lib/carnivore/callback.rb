@@ -70,7 +70,7 @@ module Carnivore
           debug "Invalid message for this callback #{message})"
         end
       rescue => e
-        error "[callback: #{self}, source: #{message[:source]}, message: #{message[:message].object_id}]: #{e.class} - #{e}"
+        error "[callback: #{self}, source: #{message[:source]}, message: #{message}]: #{e.class} - #{e}"
         debug "#{e.class}: #{e}\n#{e.backtrace.join("\n")}"
         nil
       end
