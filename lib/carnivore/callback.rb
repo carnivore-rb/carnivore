@@ -64,7 +64,7 @@ module Carnivore
     def call(message)
       begin
         if(valid?(message))
-          debug ">> Received message is valid for this callback (#{message})"
+          info ">> Received message is valid for this callback (#{message})"
           execute(message)
         else
           debug "Invalid message for this callback #{message})"
