@@ -16,8 +16,9 @@ stuff gets done. Super simple!
 3. Profit!
 
 ```ruby
+require 'carnivore'
 Carnivore.configure do
-  src = Source.build(:type => :test, :args => {})
+  src = Carnivore::Source.build(:type => :test, :args => {})
   src.add_callback(:print_message) do |msg|
     puts "Received message: #{msg}"
   end
