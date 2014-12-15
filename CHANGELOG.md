@@ -2,6 +2,7 @@
 * Log incoming messages at info level
 * Add Source#touch method
 * Rescue and log encoding errors on transmission (prevent fatal teardown)
+* Add Message#touch proxy helper
 
 # v0.2.14
 * Always return `Smash` types when config value is `Hash`

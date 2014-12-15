@@ -36,6 +36,13 @@ module Carnivore
       self[:source].confirm(*([self] + args).flatten(1).compact)
     end
 
+    # Touch message on source
+    #
+    # @return [TrueClass, FalseClass]
+    def touch!
+      self[:source].touch(self)
+    end
+
     # @return [String] formatted inspection string
     def inspect
       "<Carnivore::Message[#{self.object_id}] @args=#{args.inspect}>"
