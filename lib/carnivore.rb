@@ -2,12 +2,13 @@
 autoload :Celluloid, 'celluloid'
 autoload :MultiJson, 'multi_json'
 
+require 'bogo-cli'
+require 'bogo-config'
 require 'carnivore/runner'
 require 'carnivore/version'
 
 # Message consumer and processor
 module Carnivore
-  autoload :Config, 'carnivore/config'
   autoload :Callback, 'carnivore/callback'
   autoload :Container, 'carnivore/container'
   autoload :Error, 'carnivore/errors'
@@ -17,5 +18,3 @@ module Carnivore
   autoload :Utils, 'carnivore/utils'
   autoload :Version, 'carnivore/version'
 end
-
-autoload :Smash, 'carnivore/utils/smash'

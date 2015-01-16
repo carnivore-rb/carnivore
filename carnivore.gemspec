@@ -11,7 +11,7 @@ Gem::Specification.new do |s|
   s.license = 'Apache 2.0'
   s.require_path = 'lib'
   s.add_dependency 'celluloid'
-  s.add_dependency 'mixlib-config'
+  s.add_dependency 'bogo-config'
   s.add_dependency 'multi_json'
   s.add_dependency 'hashie'
   s.files = Dir['lib/**/*'] + %w(carnivore.gemspec README.md CHANGELOG.md)

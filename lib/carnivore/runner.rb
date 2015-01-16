@@ -3,6 +3,24 @@ require 'carnivore'
 module Carnivore
   class << self
 
+    # Sets the global configuration
+    #
+    # @param path [String] configuration file or directory
+    # @return [Bogo::Config]
+    def configure!(*args)
+      if(defined?(Carnivore::Config))
+        if(!args.include?(:verify) && !args.include?(:force))
+          raise 'Global configuration has already been set!'
+        end
+        if(args.include?(:force))
+          Carnivore.send(:remove_const, :Config)
+        end
+      end
+      unless(defined?(Carnivore::Config))
+        Carnivore.const_set(:Config, Bogo::Config.new(args.first))
+      end
+    end
+
     # Add configuration to Carnivore
     #
     # @yield block of configuration
@@ -18,6 +36,7 @@ module Carnivore
       supervisor = nil
       begin
         require 'carnivore/supervisor'
+        configure!(:verify)
         supervisor = Carnivore::Supervisor.build!
         Celluloid::Logger.info 'Initializing all registered sources.'
         [].tap do |register|
