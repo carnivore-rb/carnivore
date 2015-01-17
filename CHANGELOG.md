@@ -1,5 +1,6 @@
-# v0.2.18
-*
+# v0.3.0
+* Remove custom rolled configuration
+* Auto define configuration when not set prior to start
 
 # v0.2.16
 * Log incoming messages at info level
