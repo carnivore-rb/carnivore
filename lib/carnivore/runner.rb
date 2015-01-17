@@ -19,6 +19,7 @@ module Carnivore
       unless(defined?(Carnivore::Config))
         Carnivore.const_set(:Config, Bogo::Config.new(args.first))
       end
+      Carnivore::Config
     end
 
     # Add configuration to Carnivore
