@@ -17,7 +17,11 @@ module Carnivore
         end
       end
       unless(defined?(Carnivore::Config))
-        Carnivore.const_set(:Config, Bogo::Config.new(args.first))
+        Carnivore.const_set(:Config,
+          Bogo::Config.new(
+            args.first.is_a?(Symbol) ? Smash.new : args.first
+          )
+        )
       end
       Carnivore::Config
     end
