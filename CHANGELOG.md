@@ -1,3 +1,7 @@
+# v0.3.2
+* Update auto configuration behavior
+* Return configuration instance when running configure
+
 # v0.3.0
 * Remove custom rolled configuration
 * Auto define configuration when not set prior to start
