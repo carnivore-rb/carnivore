@@ -2,7 +2,6 @@
 autoload :Celluloid, 'celluloid'
 autoload :MultiJson, 'multi_json'
 
-require 'bogo-cli'
 require 'bogo-config'
 require 'carnivore/runner'
 require 'carnivore/version'
