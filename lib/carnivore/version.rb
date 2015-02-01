@@ -1,4 +1,4 @@
 module Carnivore
   # Current version of library
-  VERSION = Gem::Version.new('0.3.3')
+  VERSION = Gem::Version.new('0.3.4')
 end

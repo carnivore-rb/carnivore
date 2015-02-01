@@ -1,3 +1,8 @@
+# v0.3.4
+* Remove loading of unused CLI library
+* Only terminate callback supervisor if alive
+* Set logging level to debug if env var is set
+
 # v0.3.2
 * Update auto configuration behavior
 * Return configuration instance when running configure
