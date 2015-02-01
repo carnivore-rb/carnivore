@@ -207,7 +207,7 @@ module Carnivore
     # Ensure we cleanup our internal supervisor before bailing out
     def teardown_cleanup
       warn 'Termination request received. Tearing down!'
-      callback_supervisor.terminate
+      callback_supervisor.terminate if callback_supervisor.alive?
     end
 
     # @return [TrueClass, FalseClass] automatic message confirmation enabled
