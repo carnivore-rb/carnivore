@@ -2,7 +2,7 @@ require 'carnivore'
 require 'celluloid'
 require 'minitest/autorun'
 
-Celluloid.logger.level = 4
+Celluloid.logger.level = ENV['DEBUG'] ? 0 : 4
 
 if(File.directory?(dir = File.join(Dir.pwd, 'test', 'specs')))
   Dir.glob(File.join(dir, '*.rb')).each do |path|
