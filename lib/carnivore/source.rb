@@ -80,6 +80,11 @@ module Carnivore
         @sources ? @sources.values : []
       end
 
+      # @return [NilClass] Remove any registered sources
+      def clear!
+        @sources = nil
+      end
+
       # Reset communication methods within class
       def reset_comms!
         self.class_eval do
@@ -207,7 +212,12 @@ module Carnivore
     # Ensure we cleanup our internal supervisor before bailing out
     def teardown_cleanup
       warn 'Termination request received. Tearing down!'
-      callback_supervisor.terminate if callback_supervisor.alive?
+      if(callback_supervisor && callback_supervisor.alive?)
+        warn "Tearing down callback supervisor! (#{callback_supervisor})"
+        callback_supervisor.terminate
+      else
+        warn 'Callback supervisor is not alive. No teardown issued'
+      end
     end
 
     # @return [TrueClass, FalseClass] automatic message confirmation enabled
