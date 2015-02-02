@@ -1,6 +1,11 @@
-require 'carnivore/config'
 
 describe 'Carnivore::Config' do
+
+  before do
+    require 'carnivore/runner'
+    Carnivore.configure!(:verify)
+  end
+
   describe 'Direct Configuration' do
     it 'allows direct configuration set' do
       Carnivore::Config[:direct] = true
