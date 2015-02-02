@@ -10,6 +10,8 @@ module Carnivore
 
     class << self
 
+      include Bogo::Memoization
+
       # Builds a source container
       #
       # @param args [Hash] source configuration
@@ -31,14 +33,27 @@ module Carnivore
         inst
       end
 
+      # @return [Smash] Source class information
+      def source_classes
+        memoize(:source_classes, :global) do
+          Smash.new
+        end
+      end
+
+      # @return [Smash] Registered source information
+      def sources_registry
+        memoize(:sources, :global) do
+          Smash.new
+        end
+      end
+
       # Register a new source type
       #
       # @param type [Symbol] name of source type
       # @param require_path [String] path to require when requested
       # @return [TrueClass]
       def provide(type, require_path)
-        @source_klass ||= Smash.new
-        @source_klass[type] = require_path
+        source_classes[type] = require_path
         true
       end
 
@@ -47,8 +62,7 @@ module Carnivore
       # @param type [String, Symbol] name of source type
       # @return [String, NilClass]
       def require_path(type)
-        @source_klass ||= Smash.new
-        @source_klass[type]
+        source_classes[type]
       end
 
       # Register the container
@@ -57,8 +71,7 @@ module Carnivore
       # @param inst [SourceContainer]
       # @return [TrueClass]
       def register(name, inst)
-        @sources ||= Smash.new
-        @sources[name] = inst
+        sources_registry[name] = inst
         true
       end
 
@@ -67,8 +80,8 @@ module Carnivore
       # @param name [String, Symbol] name of source
       # @return [SourceContainer]
       def source(name)
-        if(@sources && @sources[name.to_sym])
-          @sources[name.to_sym]
+        if(sources_registry[name])
+          sources_registry[name]
         else
           Celluloid.logger.error "Source lookup failed (name: #{name})"
           abort KeyError.new("Requested named source is not registered: #{name}")
@@ -77,12 +90,12 @@ module Carnivore
 
       # @return [Array<SourceContainer>] registered source containers
       def sources
-        @sources ? @sources.values : []
+        sources_registry.values
       end
 
       # @return [NilClass] Remove any registered sources
       def clear!
-        @sources = nil
+        sources_registry.clear
       end
 
       # Reset communication methods within class
