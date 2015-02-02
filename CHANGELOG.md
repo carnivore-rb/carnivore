@@ -1,3 +1,8 @@
+# v0.3.6
+* Add `Carnivore::Source.clear!` helper
+* Integrate memoization helpers
+* Fix up config specs to proper load in config
+
 # v0.3.4
 * Remove loading of unused CLI library
 * Only terminate callback supervisor if alive
