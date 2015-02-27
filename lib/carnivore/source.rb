@@ -226,8 +226,12 @@ module Carnivore
     def teardown_cleanup
       warn 'Termination request received. Tearing down!'
       if(callback_supervisor && callback_supervisor.alive?)
-        warn "Tearing down callback supervisor! (#{callback_supervisor})"
-        callback_supervisor.terminate
+        begin
+          warn "Tearing down callback supervisor! (#{callback_supervisor})"
+          callback_supervisor.terminate
+        rescue Celluloid::Task::TerminatedError
+          warn 'Terminated task error during callback supervisor teardown. Moving on.'
+        end
       else
         warn 'Callback supervisor is not alive. No teardown issued'
       end
