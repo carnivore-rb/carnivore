@@ -1,3 +1,7 @@
+# v0.3.8
+* Re-add config file for libraries doing direct loading
+* Ensure source teardown does not hang
+
 # v0.3.6
 * Add `Carnivore::Source.clear!` helper
 * Integrate memoization helpers
