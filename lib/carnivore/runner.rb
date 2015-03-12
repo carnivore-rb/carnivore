@@ -47,7 +47,6 @@ module Carnivore
         [].tap do |register|
           Source.sources.each do |source|
             register << Thread.new do
-              source.klass.reset_comms!
               supervisor.supervise_as(
                 source.source_hash[:name],
                 source.klass,
