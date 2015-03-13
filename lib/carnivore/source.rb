@@ -358,10 +358,18 @@ module Carnivore
     def format(msg)
       actor = Carnivore::Supervisor.supervisor[name]
       if(actor)
-        Message.new(
-          :message => msg,
-          :source => actor.current_actor
-        )
+        if(msg.is_a?(Hash))
+          Message.new(
+            :message => msg[:raw],
+            :content => msg[:content],
+            :source => actor.current_actor
+          )
+        else
+          Message.new(
+            :message => msg,
+            :source => actor.current_actor
+          )
+        end
       else
         abort "Failed to locate self in registry (#{name})"
       end
