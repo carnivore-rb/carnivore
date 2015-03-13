@@ -358,7 +358,7 @@ module Carnivore
     def format(msg)
       actor = Carnivore::Supervisor.supervisor[name]
       if(actor)
-        if(msg.is_a?(Hash))
+        if(msg.is_a?(Hash) && msg.keys.map(&:to_s).sort == ['content', 'raw'])
           Message.new(
             :message => msg[:raw],
             :content => msg[:content],
