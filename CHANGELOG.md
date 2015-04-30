@@ -1,3 +1,7 @@
+# v0.3.10
+* Do not reset comms for local loop back to prevent looping aliases
+* Allow content to be provided and auto nest
+
 # v0.3.8
 * Re-add config file for libraries doing direct loading
 * Ensure source teardown does not hang
