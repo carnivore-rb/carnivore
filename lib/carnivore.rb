@@ -9,7 +9,6 @@ require 'carnivore/version'
 # Message consumer and processor
 module Carnivore
   autoload :Callback, 'carnivore/callback'
-  autoload :Config, 'carnivore/config'
   autoload :Container, 'carnivore/container'
   autoload :Error, 'carnivore/errors'
   autoload :Message, 'carnivore/message'
