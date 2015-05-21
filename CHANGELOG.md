@@ -1,3 +1,6 @@
+# v0.3.12
+* Remove config loader to prevent early loading
+
 # v0.3.10
 * Do not reset comms for local loop back to prevent looping aliases
 * Allow content to be provided and auto nest
