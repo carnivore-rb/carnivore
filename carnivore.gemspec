@@ -10,7 +10,7 @@ Gem::Specification.new do |s|
   s.description = 'Message processing helper'
   s.license = 'Apache 2.0'
   s.require_path = 'lib'
-  s.add_dependency 'celluloid'
+  s.add_dependency 'celluloid', '~> 0.16.0'
   s.add_dependency 'bogo-config'
   s.add_dependency 'multi_json'
   s.add_dependency 'hashie'
