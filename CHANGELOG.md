@@ -1,3 +1,7 @@
+# v0.3.14
+* Call out errors caught that were not handled
+* Add tight constraint on celluloid due to major changes in 0.17
+
 # v0.3.12
 * Remove config loader to prevent early loading
 
