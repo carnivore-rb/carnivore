@@ -401,15 +401,14 @@ module Carnivore
     def process(*args)
       unless(processing)
         begin
-          async.receive_messages
           @processing = true
           while(run_process && !callbacks.empty?)
-            if(message_loop.empty? && message_remote.empty?)
-              wait(:messages_available)
-            end
-            msgs = []
-            msgs.push message_loop.pop unless message_loop.empty?
-            msgs.push message_remote.pop unless message_remote.empty?
+            # if(message_loop.empty? && message_remote.empty?)
+            #   wait(:messages_available)
+            # end
+            msgs = receive
+            # msgs.push message_loop.pop unless message_loop.empty?
+            # msgs.push message_remote.pop unless message_remote.empty?
             msgs = [msgs].flatten.compact.map do |m|
               if(valid_message?(m))
                 format(m)
