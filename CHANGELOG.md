@@ -1,3 +1,7 @@
+# v0.3.16
+* Explicit celluloid constraint due to breaking changes in 0.16.1
+* Disable support for local loop back (not currently used)
+
 # v0.3.14
 * Call out errors caught that were not handled
 * Add tight constraint on celluloid due to major changes in 0.17
