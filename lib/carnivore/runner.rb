@@ -43,7 +43,7 @@ module Carnivore
         require 'carnivore/supervisor'
         configure!(:verify)
         supervisor = Carnivore::Supervisor.build!
-        Celluloid::Logger.info 'Initializing all registered sources.'
+        Carnivore::Logger.info 'Initializing all registered sources.'
         [].tap do |register|
           Source.sources.each do |source|
             register << Thread.new do
@@ -55,7 +55,12 @@ module Carnivore
             end
           end
         end.map(&:join)
-        Celluloid::Logger.info 'Source initializations complete. Enabling message processing.'
+        Carnivore::Logger.info 'Source initializations complete. Running setup and establishing connections.'
+        Source.sources.each do |source|
+          supervisor[source.source_hash[:name]].run_setup
+          supervisor[source.source_hash[:name]].run_connect
+        end
+        Carnivore::Logger.info 'Sources setup and connected. Enabling message processing.'
         Source.sources.each do |source|
           if(source.source_hash.fetch(:auto_process, true))
             supervisor[source.source_hash[:name]].start!
@@ -65,23 +70,32 @@ module Carnivore
           # We do a sleep loop so we can periodically check on the
           # supervisor and ensure it is still alive. If it has died,
           # raise exception to allow cleanup and restart attempt
-          sleep Carnivore::Config.get(:carnivore, :supervisor, :poll) || 5 while supervisor.alive?
-          Celluloid::Logger.error 'Carnivore supervisor has died!'
+          gc_interval = Carnivore::Config.fetch(:carnivore, :garbage_interval, 30)
+          gc_last = Time.now.to_i
+          while(supervisor.alive?)
+            sleep Carnivore::Config.get(:carnivore, :supervisor, :poll) || 5
+            if(gc_interval && (Time.now.to_i - gc_last) > gc_interval)
+              Carnivore::Logger.debug 'Starting interval forced garbage collection from runner'
+              GC.start
+              gc_last = Time.now.to_i
+            end
+          end
+          Carnivore::Logger.error 'Carnivore supervisor has died!'
           raise Carnivore::Error::DeadSupervisor.new
         end
       rescue Carnivore::Error::DeadSupervisor
-        Celluloid::Logger.warn "Received dead supervisor exception. Attempting to restart."
+        Carnivore::Logger.warn "Received dead supervisor exception. Attempting to restart."
         begin
-          supervisor.terminate
+          supervisor.terminate if supervisor.alive?
         rescue => e
-          Celluloid::Logger.debug "Exception raised during supervisor termination (restart cleanup): #{e}"
+          Carnivore::Logger.debug "Exception raised during supervisor termination (restart cleanup): #{e}"
         end
-        Celluloid::Logger.debug "Pausing restart for 10 seconds to prevent restart thrashing cycles"
+        Carnivore::Logger.debug "Pausing restart for 10 seconds to prevent restart thrashing cycles"
         sleep 10
         retry
       rescue Exception => e
-        Celluloid::Logger.warn "Exception type encountered forcing shutdown - #{e.class}: #{e}"
-        Celluloid::Logger.debug "Shutdown exception info: #{e.class}: #{e}\n#{e.backtrace.join("\n")}"
+        Carnivore::Logger.warn "Exception type encountered forcing shutdown - #{e.class}: #{e}"
+        Carnivore::Logger.debug "Shutdown exception info: #{e.class}: #{e}\n#{e.backtrace.join("\n")}"
         supervisor.terminate if supervisor
         # Gracefully shut down
       end

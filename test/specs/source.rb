@@ -64,7 +64,7 @@ describe 'Carnivore::Source' do
         x = Carnivore::Source.new(:auto_process => false)
         x.add_callback(:fubar, lambda{|m| true })
         x.process
-      }.must_raise Celluloid::Task::TerminatedError
+      }.must_raise NotImplementedError
     end
 
     it 'should do nothing when process is called and no callbacks are registered' do

@@ -27,7 +27,7 @@ module Carnivore
         require Source.require_path(args[:type]) || "carnivore/source/#{args[:type]}"
         klass = args[:type].to_s.split('_').map(&:capitalize).join
         klass = Source.const_get(klass)
-        args[:args][:name] ||= Celluloid.uuid
+        args[:args][:name] ||= Carnivore.uuid
         inst = SourceContainer.new(klass, args[:args])
         register(args[:args][:name], inst)
         inst
@@ -83,7 +83,7 @@ module Carnivore
         if(sources_registry[name])
           sources_registry[name]
         else
-          Celluloid.logger.error "Source lookup failed (name: #{name})"
+          Carnivore.logger.error "Source lookup failed (name: #{name})"
           abort KeyError.new("Requested named source is not registered: #{name}")
         end
       end
@@ -113,13 +113,14 @@ module Carnivore
 
     end
 
-    include Celluloid
+    include Zoidberg::SoftShell
+    include Zoidberg::Supervise
     include Utils::Logging
     # @!parse include Carnivore::Utils::Logging
     include Utils::Failure
     # @!parse include Carnivore::Utils::Failure
 
-    finalizer :teardown_cleanup
+#    finalizer :teardown_cleanup
 
     # @return [String, Symbol] name of source
     attr_reader :name
@@ -185,22 +186,37 @@ module Carnivore
         init_registry
       end
       @processing = false
-      @name = args[:name] || Celluloid.uuid
+      @name = args[:name] || Carnivore.uuid
       if(args[:callbacks])
         args[:callbacks].each do |name, block|
           add_callback(name, block)
         end
       end
-      execute_and_retry_forever(:setup) do
-        setup(args)
-      end
-      execute_and_retry_forever(:connect) do
-        connect
-      end
       info 'Source initialization is complete'
     rescue => e
       debug "Failed to initialize: #{self} - #{e.class}: #{e}\n#{e.backtrace.join("\n")}"
       raise
+    end
+
+    # Fully restore the source if it is restarted
+    def restarted!
+      run_setup
+      run_connect
+      start!
+    end
+
+    # Run the source setup action
+    def run_setup
+      execute_and_retry_forever(:setup) do
+        setup(args)
+      end
+    end
+
+    # Run the source connect action
+    def run_connect
+      execute_and_retry_forever(:connect) do
+        connect
+      end
     end
 
     # Start source if auto_process is enabled
@@ -223,13 +239,13 @@ module Carnivore
     end
 
     # Ensure we cleanup our internal supervisor before bailing out
-    def teardown_cleanup
+    def terminate
       warn 'Termination request received. Tearing down!'
       if(callback_supervisor && callback_supervisor.alive?)
         begin
           warn "Tearing down callback supervisor! (#{callback_supervisor})"
           callback_supervisor.terminate
-        rescue Celluloid::Task::TerminatedError
+        rescue Zoidberg::DeadException
           warn 'Terminated task error during callback supervisor teardown. Moving on.'
         end
       else

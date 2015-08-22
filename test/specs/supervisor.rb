@@ -14,12 +14,12 @@ describe 'Carnivore::Supervisor' do
 
     it 'should populate the `supervisor`' do
       klass = Carnivore::Supervisor.supervisor.class
-      klass.must_equal Carnivore::Supervisor
+      klass.must_equal Zoidberg::Supervisor
     end
 
     it 'should populate the `registry`' do
       klass = Carnivore::Supervisor.registry.class
-      klass.must_equal Celluloid::Registry
+      klass.must_equal Zoidberg::Registry
     end
 
     it 'should return the `Carnivore::Supervisor` instance' do
@@ -35,9 +35,9 @@ describe 'Carnivore::Supervisor' do
       result = Carnivore::Supervisor.create!
       result.size.must_equal 2
       registry = result.first.class
-      registry.must_equal Celluloid::Registry
+      registry.must_equal Zoidberg::Registry
       supervisor = result.last.class
-      supervisor.must_equal Carnivore::Supervisor
+      supervisor.must_equal Zoidberg::Supervisor
     end
 
     it 'should not affect a currently built `supervisor`' do
