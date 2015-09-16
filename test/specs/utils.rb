@@ -5,11 +5,11 @@ describe 'Carnivore::Utils' do
     before do
       @obj = Object.new
       @obj.extend(Carnivore::Utils::Logging)
-      Celluloid.logger.level = 0
+      Carnivore::Logger.level = 0
     end
 
     after do
-      Celluloid.logger.level = 4
+      Carnivore::Logger.level = 4
     end
 
     it 'adds logging methods' do

@@ -1,3 +1,6 @@
+# v1.0.0
+* Remove celluloid, add zoidberg
+
 # v0.3.16
 * Explicit celluloid constraint due to breaking changes in 0.16.1
 * Disable support for local loop back (not currently used)

@@ -9,7 +9,8 @@ module Carnivore
       attr_accessor :workers
     end
 
-    include Celluloid
+    include Zoidberg::SoftShell
+    include Zoidberg::Supervise
     include Carnivore::Utils::Logging
     # @!parse include Carnivore::Utils::Logging
     include Carnivore::Utils::Failure

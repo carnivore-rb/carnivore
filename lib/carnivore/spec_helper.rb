@@ -1,8 +1,7 @@
 require 'carnivore'
-require 'celluloid'
 require 'minitest/autorun'
 
-Celluloid.logger.level = ENV['DEBUG'] ? 0 : 4
+Zoidberg.logger.level = ENV['DEBUG'] ? 0 : 4
 
 if(File.directory?(dir = File.join(Dir.pwd, 'test', 'specs')))
   Dir.glob(File.join(dir, '*.rb')).each do |path|
@@ -11,11 +10,6 @@ if(File.directory?(dir = File.join(Dir.pwd, 'test', 'specs')))
 else
   puts 'Failed to locate `test/specs` directory. Are you in project root directory?'
   exit -1
-end
-
-MiniTest::Spec.before do
-  Celluloid.shutdown
-  Celluloid.boot
 end
 
 # Simple waiter method to stall testing

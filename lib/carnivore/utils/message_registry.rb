@@ -4,6 +4,8 @@ module Carnivore
     # Registry used for preventing duplicate message processing
     class MessageRegistry
 
+      include Zoidberg::Shell
+
       # Create new instance
       def initialize
         @store = []

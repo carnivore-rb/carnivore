@@ -17,6 +17,8 @@ module Carnivore
           result = yield
           debug "Completed #{action} process"
           result
+        rescue Zoidberg::DeadException
+          raise
         rescue => e
           error "#{action.to_s.capitalize} process encountered an error: #{e.class} - #{e}"
           debug "#{e.class}: #{e}\n#{e.backtrace.join("\n")}"

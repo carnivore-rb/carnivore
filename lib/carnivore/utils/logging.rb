@@ -19,10 +19,10 @@ module Carnivore
       # @return [NilClass]
       def log(*args)
         if(args.empty?)
-          Celluloid::Logger
+          Zoidberg.logger
         else
           severity, string = args
-          Celluloid::Logger.send(severity.to_sym, "#{self}: #{string}")
+          Zoidberg.logger.send(severity.to_sym, "#{self}: #{string}")
         end
       end
 

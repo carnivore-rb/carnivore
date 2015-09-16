@@ -9,16 +9,16 @@ module Carnivore
 
     class << self
 
-      # @return [Celluloid::Logger]
+      # @return [Logger]
       def log
-        Celluloid::Logger
+        Carnivore::Utils::Logging::Logger
       end
 
     end
 
-    # @return [Celluloid::Logger]
+    # @return [Logger]
     def log
-      Celluloid::Logger
+      Carnivore::Utils::Logging::Logger
     end
 
   end
