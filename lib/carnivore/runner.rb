@@ -97,6 +97,7 @@ module Carnivore
         Carnivore::Logger.warn "Exception type encountered forcing shutdown - #{e.class}: #{e}"
         Carnivore::Logger.debug "Shutdown exception info: #{e.class}: #{e}\n#{e.backtrace.join("\n")}"
         supervisor.terminate if supervisor
+        raise
         # Gracefully shut down
       end
     end
