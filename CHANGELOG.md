@@ -1,3 +1,7 @@
+# v1.0.2
+* Fix access to default logger on source setup failure
+* Re-raise exception after supervisor is destroyed
+
 # v1.0.0
 * Remove celluloid, add zoidberg
 
