@@ -83,7 +83,7 @@ module Carnivore
         if(sources_registry[name])
           sources_registry[name]
         else
-          Carnivore.logger.error "Source lookup failed (name: #{name})"
+          Carnivore::Logger.error "Source lookup failed (name: #{name})"
           abort KeyError.new("Requested named source is not registered: #{name}")
         end
       end
