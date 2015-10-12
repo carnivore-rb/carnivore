@@ -120,8 +120,6 @@ module Carnivore
     include Utils::Failure
     # @!parse include Carnivore::Utils::Failure
 
-#    finalizer :teardown_cleanup
-
     # @return [String, Symbol] name of source
     attr_reader :name
     # @return [Array<Callback>] registered callbacks
@@ -447,7 +445,7 @@ module Carnivore
               else
                 valid_callbacks.each do |name|
                   debug "Dispatching message<#{msg[:message].object_id}> to callback<#{name} (#{callback_name(name)})>"
-                  callback_supervisor[callback_name(name)].async.call(msg)
+                  callback_supervisor[callback_name(name)].async(:locked).call(msg)
                 end
               end
             end
