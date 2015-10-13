@@ -33,14 +33,14 @@ module Carnivore
     #
     # @param args [Object] list passed to Carnivore::Source#confirm
     def confirm!(*args)
-      self[:source].confirm(*([self] + args).flatten(1).compact)
+      self[:source].async(:locked).confirm(*([self] + args).flatten(1).compact)
     end
 
     # Touch message on source
     #
     # @return [TrueClass, FalseClass]
     def touch!
-      self[:source].touch(self)
+      self[:source].async(:locked).touch(self)
     end
 
     # @return [String] formatted inspection string

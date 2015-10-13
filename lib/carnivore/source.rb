@@ -223,7 +223,7 @@ module Carnivore
     def start!
       if(auto_process?)
         info 'Message processing started via auto start'
-        async.process
+        async(:locked).process
         true
       else
         warn 'Message processing is disabled via auto start'
@@ -303,7 +303,7 @@ module Carnivore
     # @param message [Carnivore::Message]
     # @return [TrueClass, FalseClass]
     def touch(message)
-      warn 'Source#touch was not implemented for this source!'
+      debug 'Source#touch was not implemented for this source!'
       true
     end
 
