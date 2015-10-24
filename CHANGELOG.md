@@ -1,3 +1,7 @@
+# v1.0.6
+* Add forcible shutdown support after timeout
+* Fix supervisor return value to provide subclassed implementation
+
 # v1.0.4
 * Update async requests to be locked requests
 * Adjust minimum constraint on zoidberg dependency
