@@ -15,9 +15,9 @@ module Carnivore
 
       # Create a new supervisor
       #
-      # @return [Array<[Celluloid::Registry, Carnivore::Supervisor]>]
+      # @return [Array<[Zoidberg::Registry, Carnivore::Supervisor]>]
       def create!
-        s = Zoidberg::Supervisor.new
+        s = Carnivore::Supervisor.new
         [s.registry, s]
       end
 
@@ -28,6 +28,9 @@ module Carnivore
       def supervisor(sup=nil)
         if(sup)
           @supervisor = sup
+        end
+        unless(@supervisor)
+          raise Zoidberg::DeadException.new('Instance in terminated state!')
         end
         @supervisor
       end
