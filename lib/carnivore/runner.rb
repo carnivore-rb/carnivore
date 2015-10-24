@@ -1,6 +1,10 @@
 require 'carnivore'
 
 module Carnivore
+
+  # Number of seconds to wait for clean shutdown
+  FORCE_SHUTDOWN_AFTER = 8
+
   class << self
 
     # Sets the global configuration
@@ -96,9 +100,20 @@ module Carnivore
       rescue Exception => e
         Carnivore::Logger.warn "Exception type encountered forcing shutdown - #{e.class}: #{e}"
         Carnivore::Logger.debug "Shutdown exception info: #{e.class}: #{e}\n#{e.backtrace.join("\n")}"
+        Zoidberg.signal_shutdown = true
         supervisor.terminate if supervisor
+        Carnivore::Logger.debug 'Carnivore supervisor has been teminated!'
+        timeout = Carnivore::FORCE_SHUTDOWN_AFTER
+        until(timeout <= 0 || Thread.list.size == 1)
+          timeout -= 0.1
+          sleep(0.1)
+        end
+        Thread.list.each do |thread|
+          next if Thread.current == thread
+          Carnivore::Logger.warn "Force killing live thread for shutdown: #{thread.inspect}"
+          thread.kill
+        end
         raise
-        # Gracefully shut down
       end
     end
   end
