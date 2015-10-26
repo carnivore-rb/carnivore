@@ -33,7 +33,10 @@ module Carnivore
     #
     # @param args [Object] list passed to Carnivore::Source#confirm
     def confirm!(*args)
-      self[:source].async(:locked).confirm(*([self] + args).flatten(1).compact)
+      unless(@confirm)
+        @confirm = true
+        self[:source].async(:locked).confirm(*([self] + args).flatten(1).compact)
+      end
     end
 
     # Touch message on source
