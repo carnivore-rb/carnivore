@@ -1,3 +1,7 @@
+# v1.0.8
+* Add guard to prevent duplicate confirmations
+* Defer when validating message for dispatch
+
 # v1.0.6
 * Add forcible shutdown support after timeout
 * Fix supervisor return value to provide subclassed implementation
