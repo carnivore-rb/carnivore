@@ -431,7 +431,7 @@ module Carnivore
             msgs.each do |msg|
               if(multiple_callbacks? || respond_to?(:orphan_callback))
                 valid_callbacks = callbacks.find_all do |name|
-                  callback_supervisor[callback_name(name)].valid?(msg)
+                  defer{ callback_supervisor[callback_name(name)].valid?(msg) }
                 end
               else
                 valid_callbacks = callbacks
