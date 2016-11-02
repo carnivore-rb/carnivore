@@ -429,25 +429,7 @@ module Carnivore
               end
             end.compact
             msgs.each do |msg|
-              if(multiple_callbacks? || respond_to?(:orphan_callback))
-                valid_callbacks = callbacks.find_all do |name|
-                  defer{ callback_supervisor[callback_name(name)].valid?(msg) }
-                end
-              else
-                valid_callbacks = callbacks
-              end
-              if(valid_callbacks.empty?)
-                warn "Received message was not processed through any callbacks on this source: #{msg}"
-                orphan_callback(msg) if respond_to?(:orphan_callback)
-              elsif(valid_callbacks.size > 1 && !multiple_callbacks?)
-                error "Received message is valid for multiple callbacks but multiple callbacks are disabled: #{msg}"
-                multiple_callback(msg) if respond_to?(:multiple_callback)
-              else
-                valid_callbacks.each do |name|
-                  debug "Dispatching message<#{msg[:message].object_id}> to callback<#{name} (#{callback_name(name)})>"
-                  callback_supervisor[callback_name(name)].async(:locked).call(msg)
-                end
-              end
+              process_message(msg)
             end
           end
         ensure
@@ -457,6 +439,33 @@ module Carnivore
       else
         false
       end
+    end
+
+    # Process message through valid callbacks
+    #
+    # @param msg [Message]
+    # @return [Message]
+    def process_message(msg)
+      if(multiple_callbacks? || respond_to?(:orphan_callback))
+        valid_callbacks = callbacks.find_all do |name|
+          defer{ callback_supervisor[callback_name(name)].valid?(msg) }
+        end
+      else
+        valid_callbacks = callbacks
+      end
+      if(valid_callbacks.empty?)
+        warn "Received message was not processed through any callbacks on this source: #{msg}"
+        orphan_callback(msg) if respond_to?(:orphan_callback)
+      elsif(valid_callbacks.size > 1 && !multiple_callbacks?)
+        error "Received message is valid for multiple callbacks but multiple callbacks are disabled: #{msg}"
+        multiple_callback(msg) if respond_to?(:multiple_callback)
+      else
+        valid_callbacks.each do |name|
+          debug "Dispatching message<#{msg[:message].object_id}> to callback<#{name} (#{callback_name(name)})>"
+          callback_supervisor[callback_name(name)].async(:locked).call(msg)
+        end
+      end
+      msg
     end
 
     # Receive messages from source
